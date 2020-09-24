@@ -2,7 +2,9 @@ version: "3.3"
 
 services:
   # production containers
-  # TODO: fetcher/preprocessor container
+  scraper:
+    build: ./scraper
+    container_name: scraper
 
   mongo:
     image: mongo:4.4.1
