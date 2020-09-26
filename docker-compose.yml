@@ -15,6 +15,8 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: upa
       MONGO_INITDB_ROOT_PASSWORD: upa
+    ports:
+      - 27017:27017
     volumes:
       - mongo-data:/data/db
 
@@ -28,6 +30,8 @@ services:
       POSTGRES_USER: upa
       POSTGRES_PASSWORD: upa
       POSTGRES_DB: upa
+    ports:
+      - 5432:5432
     volumes:
       - postgres-data:/var/lib/postgresql/data
 

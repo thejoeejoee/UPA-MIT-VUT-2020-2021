@@ -9,7 +9,7 @@ sys.path.insert(0, dirname(__file__))
 
 from scraper import Scraper
 
-conn = connect('upa', host='mongo')
+conn = connect('upa', host='mongo', username='upa', password='upa')
 config = AutoConfig()
 
 logging.basicConfig(level=config('LOG_LEVEL', cast=int, default=logging.INFO))
@@ -19,4 +19,4 @@ scraper = Scraper(
     connection=conn
 )
 
-exit(scraper.run())
+scraper.run()
