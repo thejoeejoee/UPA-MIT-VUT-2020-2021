@@ -1,7 +1,22 @@
-from sys import stderr
+import logging
+import sys
+from os.path import dirname
 
+from decouple import AutoConfig
 from mongoengine import connect
 
-conn = connect('upa', host='mongo')
+sys.path.insert(0, dirname(__file__))
 
-print('It works!', conn, file=stderr)
+from scraper import Scraper
+
+conn = connect('upa', host='mongo')
+config = AutoConfig()
+
+logging.basicConfig(level=config('LOG_LEVEL', cast=int, default=logging.INFO))
+
+scraper = Scraper(
+    config=config,
+    connection=conn
+)
+
+exit(scraper.run())
