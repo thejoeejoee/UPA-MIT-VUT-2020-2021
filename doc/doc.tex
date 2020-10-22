@@ -1,0 +1,92 @@
+% \input utf8-t1
+\documentclass[11pt,a4paper,titlepage]{extarticle}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+\usepackage[obeyspaces]{url}
+\usepackage[paper=a4paper,top=1.5cm,left=1.5cm,right=1.5cm,bottom=1.5cm]{geometry}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\setcounter{secnumdepth}{1}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5\bigskipamount}
+\usepackage{amsmath} % for \text
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning}
+
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{}
+\cfoot{}
+
+\begin{document}
+\pagestyle{empty}
+\begin{center}
+	\section*{UPA: Ukládání a příprava dat -- 1. část projektu}
+\end{center}
+
+\large{Zvolené téma: \textbf{Databáze meteorologických dat}}
+
+\large{
+	Řešitelé:
+	Bc. Josef Kolář (\textit{xkolar71}),
+	Bc. Timotej Halás (\textit{xhalasXX}),
+	Bc. Vojtěch Hertl (\textit{xhertlXX})
+}
+
+\section{Zvolené dotazy a formulace vlastního dotazu}
+
+\begin{itemize}
+	\item[\textbf{A}] vytvořte žebříček nejdeštivějších/nejsušších a nejteplejších/nejchladnějších meteorologických stanic/lokalit
+	\item[\textbf{B}] najděte skupiny meteorologických stanic s podobným počasím
+\end{itemize}
+\section{Stručná charakteristika zvolené datové sady}
+(Zde konkrétně popište jaké soubory budou představovat zdroj dat pro zvolené úlohy. Dále popište, jakým způsobem budou tato data získána a stručně charakterizujte strukturu souborů vybraných pro řešení projektu. Zaměřte se na části souborů, které jsou důležité pro zodpovězení zvolených dotazů.)
+
+\begin{lstlisting}[language=XML]
+<station wmo-id="94648"
+         stn-name="ADELAIDE (WEST TERRACE / NGAYIRDAPIRA)" type="AWS"
+         lat="-34.9257" lon="138.5832" stn-height="29.32"
+         forecast-district-id="SA_PW001"
+         description="Adelaide (West Terrace /  ngayirdapira)"
+    >
+
+    <period index="0" time-utc="2020-09-26T21:50:00+00:00" wind-src="OMD">
+        <level index="0" type="surface">
+            <element units="Celsius" type="apparent_temp">6.4</element>
+            <element type="cloud">Partly cloudy</element>
+            <element type="cloud_oktas">4</element>
+            <element units="Celsius" type="delta_t">2.1</element>
+            <element units="km/h" type="gust_kmh">9</element>
+            <element units="knots" type="wind_gust_spd">5</element>
+            <element units="Celsius" type="air_temperature">9.0</element>
+            <element units="Celsius" type="dew_point">4.2</element>
+            <element units="hPa" type="pres">1027.4</element>
+            <element units="hPa" type="msl_pres">1027.4</element>
+            <element units="hPa" type="qnh_pres">1027.4</element>
+            <element units="%" type="rel-humidity">72</element>
+            <element units="km" type="vis_km">61</element>
+            <element type="wind_dir">ENE</element>
+            <element units="deg" type="wind_dir_deg">69</element>
+            <element units="km/h" type="wind_spd_kmh">7</element>
+            <element units="knots" type="wind_spd">4</element>
+        </level>
+    </period>
+</station>
+\end{lstlisting}
+
+\section{Zvolený způsob uložení uložení surových dat}
+(Zde stručně charakterizujte NoSQL databázi, která bude využita pro uložení zvolených zdrojových dat.) 
+K uložení surových dát bude použita instance databáze MongoDB spuštěná v Docker kontejneru. 
+V rámci této databáze se bude jednat o následující kolekce:
+\begin{itemize}
+	\item \texttt{station} \\
+	xxxx
+	\item \texttt{measurement} \\
+	xxxx
+\end{itemize}
+\end{document}
