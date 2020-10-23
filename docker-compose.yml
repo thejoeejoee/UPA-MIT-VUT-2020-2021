@@ -25,6 +25,7 @@ services:
   # TODO: container for data computation
 
   redis:
+    container_name: redis
     image: redis
     restart: always
     ports:
@@ -53,12 +54,12 @@ services:
     depends_on:
       - postgres
       - redis
-    environment:
-      MAPBOX_API_KEY: ${MAPBOX_API_KEY}
+    env_file:
+      - ./.local.env
     ports:
       - 8088:8088
     volumes:
-      - ./superset/config.py:/etc/superset/superset_config.py
+      - ./superset/config.py:/etc/superset/superset_config.py:ro
 
   # admin containers
   mongo-admin:
