@@ -35,6 +35,7 @@ services:
     ports:
       - 5432:5432
     volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
       - postgres-data:/var/lib/postgresql/data
 
   # TODO: presentation app container
@@ -55,6 +56,7 @@ services:
     image: adminer:latest
     environment:
       ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: nette
     ports:
       - 8082:8080
 
