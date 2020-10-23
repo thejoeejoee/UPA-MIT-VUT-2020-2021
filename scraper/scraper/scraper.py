@@ -61,7 +61,7 @@ class Scraper:
                 logger.debug('File %s: %s has been scraped.', i, to_scrape)
             return found_to_scrape
 
-    def _store_data(self, file_content):
+    def _store_data(self, file_content: str):
         data = xmltodict.parse(file_content)
 
         # TODO: find best way to unwind measurements

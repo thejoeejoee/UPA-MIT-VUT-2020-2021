@@ -13,11 +13,13 @@ services:
     container_name: mongo
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: upa
-      MONGO_INITDB_ROOT_PASSWORD: upa
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: admin
     ports:
       - 27017:27017
     volumes:
+      - ./mongo/init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - mongo-data:/data/db
 
   # TODO: container for data computation
@@ -45,8 +47,8 @@ services:
     ports:
       - 8081:8081
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: upa
-      ME_CONFIG_MONGODB_ADMINPASSWORD: upa
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
 
   postgres-admin:
     container_name: postgres-admin
