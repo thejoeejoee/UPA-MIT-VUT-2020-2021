@@ -24,6 +24,14 @@ services:
 
   # TODO: container for data computation
 
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+
   postgres:
     image: postgres:12.4
     container_name: postgres
@@ -38,7 +46,19 @@ services:
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
       - postgres-data:/var/lib/postgresql/data
 
-  # TODO: presentation app container
+  superset:
+    build: ./superset
+    container_name: superset
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      MAPBOX_API_KEY: ${MAPBOX_API_KEY}
+    ports:
+      - 8088:8088
+    volumes:
+      - ./superset/config.py:/etc/superset/superset_config.py
 
   # admin containers
   mongo-admin:
@@ -64,3 +84,4 @@ volumes:
   mongo-data:
   postgres-data:
   scraper-data:
+  redis-data:
