@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from ftplib import FTP
 from os import makedirs, stat
+from typing import Optional
 
 import xmltodict
 from dateutil import parser
@@ -9,6 +10,7 @@ from decouple import AutoConfig
 from pymongo import MongoClient
 
 from . import logger
+from .conf import MEASUREMENT_ATTRS_MAPPING, MEASUREMENT_ATTRS_TO_SKIP
 from .models import Station, Measurement
 
 
@@ -100,18 +102,9 @@ class Scraper:
             wmo_id = int(station_data.get("@wmo-id"))
 
             # checking existence of station
-            fetched_station = Station.objects(wmo_id=wmo_id)  # returns QuerySet
-            if not fetched_station:
-                station = Station()
-                station.wmo_id = wmo_id
-                station.location = station_data.get("@tz")
-                station.station_name = station_data.get("@stn-name")
-                station.station_height = float(station_data.get("@stn-height"))
-                station.latitude = float(station_data.get("@lat"))
-                station.longitude = float(station_data.get("@lon"))
-                station.save()
-            else:
-                station = fetched_station.first()
+            station = self._get_or_create_station(station_data, wmo_id)
+
+            logger.debug('Loading measurement from %s: %s.', wmo_id, station.station_name)
 
             measurement = Measurement()
             measurement.station = station.to_dbref()
@@ -121,67 +114,42 @@ class Scraper:
             elements = period.get("level").get("element")
             if elements is None:
                 break
+
             for element in elements:
                 if type(element) == str:  # should probably check if element is OrderedDict
+                    logger.warning('Skipped text element %s.', element)
                     break
-                element_type = element.get("@type")
-                element_value = element.get("#text")
-                if element_type == "time_period":
-                    measurement.time_period = element_value
-                elif element_type == "apparent_temp":
-                    measurement.apparent_temp = float(element_value)
-                elif element_type == "cloud":
-                    measurement.cloud = element_value
-                elif element_type == "cloud_oktas":
-                    measurement.cloud_oktas = int(element_value)
-                elif element_type == "cloud_type_id":
-                    measurement.cloud_type_id = int(element_value)
-                elif element_type == "delta_t":
-                    measurement.delta_t = float(element_value)
-                elif element_type == "air_temperature":
-                    measurement.air_temperature = float(element_value)
-                elif element_type == "dew_point":
-                    measurement.dew_point = float(element_value)
-                elif element_type == "pres":
-                    measurement.pres = float(element_value)
-                elif element_type == "msl_pres":
-                    measurement.msl_pres = float(element_value)
-                elif element_type == "qnh_pres":
-                    measurement.qnh_pres = float(element_value)
-                elif element_type == "rain_hour":
-                    measurement.rain_hour = float(element_value)
-                elif element_type == "rain_ten":
-                    measurement.rain_ten = float(element_value)
-                elif element_type == "rel_humidity":
-                    measurement.rel_humidity = int(element_value)
-                elif element_type == "vis_km":
-                    measurement.vis_km = float(element_value)
-                elif element_type == "weather":
-                    measurement.weather = element_value
-                elif element_type == "wind_dir":
-                    measurement.wind_dir = element_value
-                elif element_type == "wind_dir_deg":
-                    measurement.wind_dir_deg = int(element_value)
-                elif element_type == "wind_spd_kmh":
-                    measurement.wind_spd_kmh = int(element_value)
-                elif element_type == "wind_spd":
-                    measurement.wind_spd = int(element_value)
-                elif element_type == "gust_kmh":
-                    measurement.gust_kmh = int(element_value)
-                elif element_type == "wind_gust_spd":
-                    measurement.wind_gust_spd = int(element_value)
-                elif element_type == "rainfall":
-                    measurement.rainfall = element
-                elif element_type == "rainfall_24hr":
-                    measurement.rainfall_24hr = element
-                elif element_type == "maximum_air_temperature":
-                    measurement.maximum_air_temperature = element
-                elif element_type == "minimum_air_temperature":
-                    measurement.minimum_air_temperature = element
-                elif element_type == "maximum_gust_spd":
-                    measurement.maximum_gust_spd = element
-                elif element_type == "maximum_gust_kmh":
-                    measurement.maximum_gust_kmh = element
-                elif element_type == "maximum_gust_dir":
-                    measurement.maximum_gust_dir = element
+
+                attr_type = (element.get("@type") or '').replace('-', '_')
+
+                if attr_type in MEASUREMENT_ATTRS_TO_SKIP:
+                    continue
+
+                data_type: Optional[callable] = MEASUREMENT_ATTRS_MAPPING.get(attr_type)
+                if not data_type:
+                    logger.warning('Unknown attribute %s.', attr_type)
+                    continue
+
+                setattr(
+                    measurement,
+                    attr_type,
+                    data_type(element)
+                )
+
             measurement.save()
+
+    @staticmethod
+    def _get_or_create_station(data, wmo_id):
+        fetched_station = Station.objects(wmo_id=wmo_id)
+        if not fetched_station:
+            station = Station()
+            station.wmo_id = wmo_id
+            station.location = data.get("@tz")
+            station.station_name = data.get("@stn-name")
+            station.station_height = float(data.get("@stn-height"))
+            station.latitude = float(data.get("@lat"))
+            station.longitude = float(data.get("@lon"))
+            station.save()
+        else:
+            station = fetched_station.first()
+        return station
