@@ -1,5 +1,6 @@
 import os
 from ftplib import FTP
+from os import makedirs
 
 import xmltodict
 from decouple import AutoConfig
@@ -25,7 +26,10 @@ class Scraper:
     def run(self):
         local_storage_dir = self._config('LOCAL_STORAGE_DIR')
 
-        scraped = self._scrape(skip_download=True)
+        # TODO: remove after ftp.stat is implemented (bellow)
+        scraped = self._scrape(skip_download=False)
+
+        makedirs(local_storage_dir, exist_ok=True)
 
         for f in scraped:
             with open(os.path.join(local_storage_dir, f), 'r') as fd:

@@ -6,6 +6,7 @@ services:
     build: ./scraper
     container_name: scraper
     volumes:
+      - ./scraper/:/usr/src/app
       - scraper-data:/data/scraped/
 
   mongo:
