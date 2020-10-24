@@ -34,9 +34,12 @@ class Scraper:
 
         makedirs(local_storage_dir, exist_ok=True)
 
+        loaded_measurements = 0
         for f in scraped:
             with open(os.path.join(local_storage_dir, f), 'r') as fd:
-                self._store_data(file_content=fd.read())
+                loaded_measurements += self._store_data(file_content=fd.read())
+
+        logger.info('Loaded %s measurements.', loaded_measurements)
 
     def _scrape(self):
         host = self._config('FTP_HOST')
@@ -94,8 +97,9 @@ class Scraper:
 
         return datetime.fromtimestamp(stats.st_mtime)
 
-    def _store_data(self, file_content: str):
+    def _store_data(self, file_content: str) -> int:
         data = xmltodict.parse(file_content)
+        loaded = 0
 
         stations = data.get("product").get("observations").get("station")
         for station_data in stations:
@@ -137,6 +141,8 @@ class Scraper:
                 )
 
             measurement.save()
+            loaded += 1
+        return loaded
 
     @staticmethod
     def _get_or_create_station(data, wmo_id):
