@@ -1,13 +1,15 @@
 import logging
 import sys
+from datetime import timedelta, datetime
 from os.path import dirname
+from time import sleep
 
 from decouple import AutoConfig
 from mongoengine import connect
 
 sys.path.insert(0, dirname(__file__))
 
-from scraper import Scraper
+from scraper import Scraper, logger
 
 conn = connect('upa', host='mongo', username='scraper', password='scraper')
 config = AutoConfig()
@@ -19,4 +21,7 @@ scraper = Scraper(
     connection=conn
 )
 
-scraper.run()
+while True:
+    scraper.run()
+    logger.info('Waiting till %s to rescrape.', (datetime.now() + timedelta(minutes=10)))
+    sleep(10 * 60)
