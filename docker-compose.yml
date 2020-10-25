@@ -5,6 +5,8 @@ services:
   scraper:
     build: ./scraper
     container_name: scraper
+    depends_on:
+      - mongo
     volumes:
       - ./scraper/:/usr/src/app
       - scraper-data:/data/scraped/
@@ -67,6 +69,8 @@ services:
     image: mongo-express
     container_name: mongo-admin
     restart: always
+    depends_on:
+      - mongo
     ports:
       - 8081:8081
     environment:
@@ -76,6 +80,9 @@ services:
   postgres-admin:
     container_name: postgres-admin
     image: adminer:latest
+    restart: always
+    depends_on:
+      - postgres
     environment:
       ADMINER_DEFAULT_SERVER: postgres
       ADMINER_DESIGN: nette
