@@ -76,26 +76,26 @@
 \section{Zvolené dotazy a formulace vlastního dotazu}
 \begin{itemize}
 	\item[\textbf{A}] vytvořte žebříček nejdeštivějších/nejsušších a nejteplejších/nejchladnějších meteorologických stanic/lokalit
-	\item[\textbf{B}] najděte skupiny meteorologických stanic s podobným počasím
+	\item[\textbf{B}] najděte skupiny meteorologických stanic s~podobným počasím
 	\item[\textbf{C}] vizualizujte průměrnou teplotu vzduchu na kontinentu Austrálie i případnou interpolací hodnot
     do regionů bez měřících stanic
 \end{itemize}%
 \section{Stručná charakteristika zvolené datové sady}
 Na FTP serveru australského meteorologického úřadu se nachází datově i formátově široká sada mapující počasí po celém
-kontinentu Austrálie -- po účely tohoto projektu, resp. dle jeho zadání, bude k dalšímu zpracování použit výběr sedmi
+kontinentu Austrálie -- pro účely tohoto projektu, resp. dle jeho zadání, bude k~dalšímu zpracování použit výběr sedmi
 datových souborů ve formátu XML.
 
-Jejich sběr ze vzdáleného serveru bude mít na starost samostatný Docker kontejner s příznačným názvem
-\texttt{scraper} -- jeho implementace bude ralizována v jazyce Python a během svého běhu se připojí na FTP server,
+Jejich sběr ze vzdáleného serveru bude mít na starost samostatný Docker kontejner s~příznačným názvem
+\texttt{scraper} -- jeho implementace bude realizována v~jazyce Python a během svého běhu se připojí na FTP server,
 detekuje aktualizované soubory od poslední kontroly, ty novější stáhne na lokální úložiště a následně je uloží
-do databáze MongoDB. Ta běží v samostatném kontejneru a její kolekce jsou popsány v sekci
+do databáze MongoDB. Ta běží v~samostatném kontejneru a její kolekce jsou popsány v~sekci
 \nameref{sec:zvoleny-zpusob-ulozeni-surovych-dat}.
 
-Jednou z důležitých částí datových XML souborů je specifikace stanice, ve které probíhají měření -- ukázka toho
-fragmentu datové sady je umístěna níže v \nameref{lst:station-example}. Mezi atributy důležité pro řešení úloh v
-tomto projektu je především dvojice \mbox{\texttt{[lat, lon]}} určující geografické umístění stanice, unikátní
+Jednou z~důležitých částí datových XML souborů je specifikace stanice, ve které probíhají měření -- ukázka toho
+fragmentu datové sady je umístěna níže v~\nameref{lst:station-example}. Mezi atributy důležité pro řešení úloh
+v~tomto projektu je především dvojice \mbox{\texttt{[lat, lon]}} určující geografické umístění stanice, unikátní
 identifikátor stanice \texttt{wmo-id} (který bude použit pro navázání jednotlivých měření) a samotné jméno stanice
-dostupné z dvojice atributů \texttt{stn-name} a \texttt{description}.
+dostupné z~dvojice atributů \texttt{stn-name} a \texttt{description}.
 
 \begin{lstlisting}[language=XML,caption={Ukázka způsobu uložení informací týkajících se konkrétní stanice.},
 label=lst:station-example]
@@ -105,13 +105,13 @@ label=lst:station-example]
     lat="-34.9257" lon="138.5832" stn-height="29.32"
     description="Adelaide (West Terrace /  ngayirdapira)"
 ><!-- all measurements from this station based on time --></station>\end{lstlisting}
-Obsahem těchto elementů je jsou poté elementy typu \texttt{<period />}, jehož atribut \texttt{time-utc} určuje čas
-konkrétního měření. Při zanoření do těchto elementů se poté dostáváme přímo ke změřeným datům, která jsou uložena v
-elementech typu \texttt{<element />} -- ty ve všech případech obsahují atribut \texttt{type}, který značí, o jaký typ
+Obsahem těchto elementů jsou poté elementy typu \texttt{<period />}, jehož atribut \texttt{time-utc} určuje čas
+konkrétního měření. Při zanoření do těchto elementů se poté dostáváme přímo ke změřeným datům, která jsou uložena
+v~elementech typu \texttt{<element />} -- ty ve všech případech obsahují atribut \texttt{type}, který značí, o~jaký typ
 změřených dat se jedná. Samotná data jsou poté uložena jako obsah elementu a jejich jednotka, je-li to nutné, je
-doplněna v atributu \texttt{units}. Krácená varianta tohoto uložení se nachází níže v kódu
+doplněna v~atributu \texttt{units}. Krácená varianta tohoto uložení se nachází níže v~kódu
 \nameref{lst:measurement-example}.
-\begin{lstlisting}[language=XML,caption={Ukázka uložení meteorologických dat změřených v \textit{21:50:00 UTC 26.9
+\begin{lstlisting}[language=XML,caption={Ukázka uložení meteorologických dat změřených v~\textit{21:50:00 UTC 26.9
 .2020}}, label=lst:measurement-example]
 <period time-utc="2020-09-26T21:50:00+00:00">
     <level type="surface">
@@ -131,8 +131,8 @@ doplněna v atributu \texttt{units}. Krácená varianta tohoto uložení se nach
     </level>
 </period>\end{lstlisting}%
 \section{Zvolený způsob uložení uložení surových dat}\label{sec:zvoleny-zpusob-ulozeni-surovych-dat}
-V rámci této databáze se bude jednat o kolekce \texttt{station} a \texttt{measurement}. První jmenovaná ukládá
-informace o samotné meteorologické stanici provozující měření.
+V~rámci této databáze se bude jednat o~kolekce \texttt{station} a \texttt{measurement}. První jmenovaná ukládá
+informace o~samotné meteorologické stanici provozující měření.
 Kolekce \texttt{measurement} pak obsahuje všechna vykonaná měření a na stanici,
 která vykonala konkrétní měření, se odkazuje pomocí identifikátoru stanice.
 \begin{itemize}
@@ -141,7 +141,7 @@ která vykonala konkrétní měření, se odkazuje pomocí identifikátoru stani
     	\item \texttt{wmo\_id} -- unikátní identifikátor stanice
         \item \texttt{location} -- stát a město, kde se stanice nachází
         \item \texttt{station\_name} -- název stanice
-        \item \texttt{station\_height} -- nadmořská výška v metrech, ve které se stanice nachází
+        \item \texttt{station\_height} -- nadmořská výška v~metrech, ve které se stanice nachází
         \item \texttt{latitude}, \texttt{longitude} -- zeměpisná poloha stanice
     \end{itemize}
 	\item \textbf{measurement}
@@ -149,24 +149,24 @@ která vykonala konkrétní měření, se odkazuje pomocí identifikátoru stani
         \item \texttt{station} -- odkaz na unikátní identifikátor stanice
         \item \texttt{time\_period} -- čas měření
         \item \texttt{delta\_t} -- indikátor rychlosti vypařování
-        \item \texttt{dew\_point} -- teplota, na kterou musí být vzduch zchlazen, aby došlo k jeho
+        \item \texttt{dew\_point} -- teplota, na kterou musí být vzduch zchlazen, aby došlo k~jeho
         kondenzaci\footnote{též tzv. rosný bod -- \url{https://en.wikipedia.org/wiki/Dew\_point}}
         \item \texttt{rel\_humidity} -- relativní vlhkost vzduchu
-        \item \texttt{vis\_km} -- viditelnost v kilometrech
+        \item \texttt{vis\_km} -- viditelnost v~kilometrech
         \item \texttt{weather} -- typ počasí slovně
         \item \texttt{pres}, \texttt{msl\_pres}, \texttt{qnh\_press} -- údaje popisující atmosferický tlak
-        \item \texttt{rain\_hour}, \texttt{rain\_ten} -- množství srážek v milimetrech
+        \item \texttt{rain\_hour}, \texttt{rain\_ten} -- množství srážek v~milimetrech
         \item \texttt{air\_temperature}, \texttt{apparent\_temp} -- pocitová a reálná teplota vzduchu
         \item \texttt{cloud}, \texttt{cloud\_oktas}, \texttt{cloud\_type\_id} -- typ oblaků, jejich pokrytí oblohy a slovní popis oblačnosti
         \item \texttt{wind\_dir}, \texttt{wind\_dir\_deg} -- směr větru popsán slovně a úhlem 
-        \item \texttt{wind\_spd}, \texttt{wind\_spd\_kmh} -- rychlost větru v uzelch a kilometrech za hodinu získáná průměrem za 10 minut
-        \item \texttt{wind\_gust\_spd}, \texttt{gust\_kmh} -- rychlost větru v uzelch a kilometrech za hodinu získáná
+        \item \texttt{wind\_spd}, \texttt{wind\_spd\_kmh} -- rychlost větru v~uzelch a kilometrech za hodinu získáná průměrem za 10 minut
+        \item \texttt{wind\_gust\_spd}, \texttt{gust\_kmh} -- rychlost větru v~uzelch a kilometrech za hodinu získáná
         ze 3sekundových měření
-        \item \texttt{rainfall}, \texttt{rainfall\_24hr} -- počet srážek v milimetrech od ranních 9:00 a historický
-        údaj z předešlého dne
+        \item \texttt{rainfall}, \texttt{rainfall\_24hr} -- počet srážek v~milimetrech od ranních 9:00 a historický
+        údaj z~předešlého dne
         \item \texttt{minimum\_air\_temperature}, \texttt{maximum\_air\_temperature} -- minimální a maximální naměřená teplota od 18:00 do 9:00
         \item \texttt{maximum\_gust\_spd}, \texttt{maximum\_gust\_kmh}, \texttt{maximum\_gust\_dir} -- maximální
-        naměřená rychlost větru v uzlech a kilometrech za hodinu a jeho směr od půlnoci do půlnoci z 3sekundových měření
+        naměřená rychlost větru v~uzlech a kilometrech za hodinu a jeho směr od půlnoci do půlnoci z~3sekundových měření
     \end{itemize}
 \end{itemize}
 \end{document}
