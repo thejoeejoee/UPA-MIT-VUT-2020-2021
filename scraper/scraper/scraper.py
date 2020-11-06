@@ -3,6 +3,7 @@ from datetime import datetime
 from ftplib import FTP
 from os import makedirs, stat
 from parser import ParserError
+from pyexpat import ExpatError
 from typing import Optional
 from xml.etree.ElementTree import ParseError
 
@@ -15,6 +16,8 @@ from . import logger
 from .conf import MEASUREMENT_ATTRS_MAPPING, MEASUREMENT_ATTRS_TO_SKIP
 from .models import Station, Measurement
 
+class SkipFileError(Exception):
+    pass
 
 class Scraper:
     """
@@ -36,16 +39,12 @@ class Scraper:
         for root, sub_dirs, files in os.walk(local_storage_dir):
             for file_to_load in files:
                 pth = os.path.join(root, file_to_load)
-                with open(pth, 'rb') as fd:
-                    content = fd.read()
 
                 try:
-                    loaded_measurements += self._store_data(file_content=content.decode())
-                except (ParseError, UnicodeDecodeError) as e:
+                    loaded_measurements += self._try_to_store_from_file(pth=pth)
+                    logger.info('Loaded %s.', pth)
+                except SkipFileError as e:
                     logger.warning('Skipping %s due to: %s.', pth, e)
-                    continue
-
-                logger.info('Loaded %s.', pth)
 
         logger.info('Loaded %s measurements.', loaded_measurements)
 
@@ -58,8 +57,12 @@ class Scraper:
 
         loaded_measurements = 0
         for f in scraped:
-            with open(os.path.join(local_storage_dir, f), 'r') as fd:
-                loaded_measurements += self._store_data(file_content=fd.read())
+            pth = os.path.join(local_storage_dir, f)
+            try:
+                loaded_measurements += self._try_to_store_from_file(pth=pth)
+                logger.info('Loaded %s.', pth)
+            except SkipFileError as e:
+                logger.warning('Skipping %s due to: %s.', pth, e)
 
         logger.info('Loaded %s measurements.', loaded_measurements)
 
@@ -119,6 +122,16 @@ class Scraper:
 
         return datetime.fromtimestamp(stats.st_mtime)
 
+    def _try_to_store_from_file(self, pth: str) -> int:
+        with open(pth, 'rb') as fd:
+            content = fd.read()
+
+        try:
+            return self._store_data(file_content=content.decode())
+        except (ParseError, UnicodeDecodeError, ExpatError) as e:
+            logger.warning('Skipping %s due to: %s.', pth, e)
+            raise SkipFileError from e
+
     def _store_data(self, file_content: str) -> int:
         data = xmltodict.parse(file_content)
         loaded = 0
@@ -130,13 +143,16 @@ class Scraper:
             # checking existence of station
             station = self._get_or_create_station(station_data, wmo_id)
 
-            logger.debug('Loading measurement from %s: %s.', wmo_id, station.station_name)
-
-            measurement = Measurement()
-            measurement.station = station.to_dbref()
             period = station_data.get("period")
-            measurement.time_period = period.get("@time-utc")
+            time = period.get("@time-utc")
 
+            measurement, was_created = self._get_or_create_measurement(time, station)
+
+            if not was_created:
+                logger.debug('Skipping measurement %s: %s, %s.', wmo_id, station.station_name, time)
+                continue
+
+            logger.debug('Loading measurement from %s: %s, %s.', wmo_id, station.station_name, time)
             elements = period.get("level").get("element")
             if elements is None:
                 break
@@ -165,6 +181,17 @@ class Scraper:
             measurement.save()
             loaded += 1
         return loaded
+
+    @staticmethod
+    def _get_or_create_measurement(time, station):
+        m = Measurement.objects(station=station, time_period=time)
+        if m:
+            return m, False
+
+        m = Measurement()
+        m.station = station.to_dbref()
+        m.time_period = time
+        return m, True
 
     @staticmethod
     def _get_or_create_station(data, wmo_id):
