@@ -7,6 +7,9 @@ services:
     container_name: scraper
     depends_on:
       - mongo
+    command: ftp
+    env_file:
+      - ./.local.env
     volumes:
       - ./scraper/:/usr/src/app
       - scraper-data:/data/scraped/

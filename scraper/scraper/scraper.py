@@ -2,7 +2,9 @@ import os
 from datetime import datetime
 from ftplib import FTP
 from os import makedirs, stat
+from parser import ParserError
 from typing import Optional
+from xml.etree.ElementTree import ParseError
 
 import xmltodict
 from dateutil import parser
@@ -27,7 +29,27 @@ class Scraper:
         self._config = config
         self._connection = connection
 
-    def run(self):
+    def run_from_local_dir(self):
+        local_storage_dir = self._config('LOCAL_STORAGE_DIR')
+
+        loaded_measurements = 0
+        for root, sub_dirs, files in os.walk(local_storage_dir):
+            for file_to_load in files:
+                pth = os.path.join(root, file_to_load)
+                with open(pth, 'rb') as fd:
+                    content = fd.read()
+
+                try:
+                    loaded_measurements += self._store_data(file_content=content.decode())
+                except (ParseError, UnicodeDecodeError) as e:
+                    logger.warning('Skipping %s due to: %s.', pth, e)
+                    continue
+
+                logger.info('Loaded %s.', pth)
+
+        logger.info('Loaded %s measurements.', loaded_measurements)
+
+    def run_from_ftp(self):
         local_storage_dir = self._config('LOCAL_STORAGE_DIR')
 
         scraped = self._scrape()
@@ -47,7 +69,7 @@ class Scraper:
         dir_to_scrape = self._config('FTP_DIR')
         local_storage_dir = self._config('LOCAL_STORAGE_DIR')
 
-        logger.debug('Logging to FTP %s in progress.', host)
+        logger.info('Logging to FTP %s in progress.', host)
 
         with FTP(host=host, ) as ftp:
             ftp.login()
@@ -76,7 +98,7 @@ class Scraper:
                 with open(local_file_pth, 'wb') as local_fp:
                     ftp.retrbinary(f'RETR {to_scrape}', local_fp.write)
 
-                logger.debug('File %s: %s has been scraped.', i, to_scrape)
+                logger.info('File %s: %s has been scraped.', i, to_scrape)
             return found_to_scrape
 
     @staticmethod
