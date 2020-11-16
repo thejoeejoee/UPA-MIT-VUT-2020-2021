@@ -19,8 +19,9 @@ def main():
 
     args = parser.parse_args()
 
-    from models import Station
-    print(Station.objects())
+    from computer import Computer
+    computer = Computer()
+    computer.run()
 
 
 exit(main())
