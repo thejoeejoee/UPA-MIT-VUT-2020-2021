@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 from ftplib import FTP
 from os import makedirs, stat
-from parser import ParserError
 from pyexpat import ExpatError
 from typing import Optional
 from xml.etree.ElementTree import ParseError
@@ -12,9 +11,10 @@ from dateutil import parser
 from decouple import AutoConfig
 from pymongo import MongoClient
 
+from models import Station, Measurement
 from . import logger
 from .conf import MEASUREMENT_ATTRS_MAPPING, MEASUREMENT_ATTRS_TO_SKIP
-from .models import Station, Measurement
+
 
 class SkipFileError(Exception):
     pass

@@ -3,16 +3,20 @@ version: "3.3"
 services:
   # production containers
   scraper:
-    build: ./scraper
+    build:
+      context: ./python
+      dockerfile: scraper.Dockerfile
     container_name: scraper
     depends_on:
       - mongo
-    command: ftp
+    command: local-dir
     env_file:
       - ./.local.env
     volumes:
-      - ./scraper/:/usr/src/app
-      - scraper-data:/data/scraped/
+      - ./python/scraper/:/usr/src/app
+      - ./python/models/:/usr/src/app/models
+
+      - ./pocasi/:/data/scraped/
 
   mongo:
     image: mongo:4.4.1
@@ -28,7 +32,19 @@ services:
       - ./mongo/init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - mongo-data:/data/db
 
-  # TODO: container for data computation
+  computer:
+    build:
+      context: ./python
+      dockerfile: computer.Dockerfile
+    container_name: computer
+    depends_on:
+      - mongo
+      - postgres
+    env_file:
+      - ./.local.env
+    volumes:
+      - ./python/computer/:/usr/src/app
+      - ./python/models/:/usr/src/app/models
 
   redis:
     container_name: redis

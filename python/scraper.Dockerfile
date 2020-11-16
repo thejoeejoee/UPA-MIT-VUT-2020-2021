@@ -6,6 +6,8 @@ COPY requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt && mkdir -p /data/scraped/
 
-COPY . .
+COPY ./scraper/ .
+
+COPY ./models/ ./
 
 ENTRYPOINT [ "python", "./main.py" ]

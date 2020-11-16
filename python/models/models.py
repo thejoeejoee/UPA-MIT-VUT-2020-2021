@@ -9,6 +9,9 @@ class Station(Document):
     latitude = FloatField()
     longitude = FloatField()
 
+    def __str__(self):
+        return f'{self.wmo_id}: {self.station_name} ({self.latitude}, {self.longitude}; {self.station_height})'
+
 
 class Measurement(Document):
     station = ReferenceField(Station, required=True)
