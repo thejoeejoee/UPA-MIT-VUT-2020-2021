@@ -11,7 +11,7 @@ from dateutil import parser
 from decouple import AutoConfig
 from pymongo import MongoClient
 
-from models import Station, Measurement
+from models import StationDocument, MeasurementDocument
 from . import logger
 from .conf import MEASUREMENT_ATTRS_MAPPING, MEASUREMENT_ATTRS_TO_SKIP
 
@@ -184,20 +184,20 @@ class Scraper:
 
     @staticmethod
     def _get_or_create_measurement(time, station):
-        m = Measurement.objects(station=station, time_period=time)
+        m = MeasurementDocument.objects(station=station, time_period=time)
         if m:
             return m, False
 
-        m = Measurement()
+        m = MeasurementDocument()
         m.station = station.to_dbref()
         m.time_period = time
         return m, True
 
     @staticmethod
     def _get_or_create_station(data, wmo_id):
-        fetched_station = Station.objects(wmo_id=wmo_id)
+        fetched_station = StationDocument.objects(wmo_id=wmo_id)
         if not fetched_station:
-            station = Station()
+            station = StationDocument()
             station.wmo_id = wmo_id
             station.location = data.get("@tz")
             station.station_name = data.get("@stn-name")

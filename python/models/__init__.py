@@ -1,6 +1,6 @@
-from .models import Measurement, Station
+from .documents import MeasurementDocument, StationDocument
 
 __all__ = [
-    'Measurement',
-    'Station'
+    'MeasurementDocument',
+    'StationDocument'
 ]

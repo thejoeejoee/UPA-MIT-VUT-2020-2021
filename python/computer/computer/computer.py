@@ -1,4 +1,4 @@
-from models import Measurement
+from models import MeasurementDocument
 
 
 class Computer(object):
@@ -41,7 +41,7 @@ class Computer(object):
                 },
             },
         ]
-        data = Measurement.objects().aggregate(pipeline)
+        data = MeasurementDocument.objects().aggregate(pipeline)
 
         for item in data:
             print(item)

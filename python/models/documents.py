@@ -1,7 +1,9 @@
 from mongoengine import Document, ReferenceField, DictField, StringField, FloatField, DateTimeField, IntField
 
 
-class Station(Document):
+class StationDocument(Document):
+    meta = dict(collection='station')
+
     wmo_id = IntField(primary_key=True)
     location = StringField()
     station_name = StringField()
@@ -13,8 +15,10 @@ class Station(Document):
         return f'{self.wmo_id}: {self.station_name} ({self.latitude}, {self.longitude}; {self.station_height})'
 
 
-class Measurement(Document):
-    station = ReferenceField(Station, required=True)
+class MeasurementDocument(Document):
+    meta = dict(collection='measurement')
+
+    station = ReferenceField(StationDocument, required=True)
     time_period = DateTimeField()
     apparent_temp = FloatField()
     cloud = StringField()
