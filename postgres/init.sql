@@ -9,7 +9,7 @@ CREATE USER superset WITH PASSWORD 'superset';
 
 -- database upa already exists from container initialization
 -- allow everything in upa.public for user `computer`
-GRANT INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public TO computer;
+GRANT INSERT, UPDATE, DELETE, TRUNCATE, SELECT ON ALL TABLES IN SCHEMA public TO computer;
 -- allow everything in upa.public for user `django_admin`
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO django_admin;
 -- allow selects in upa.public for user `superset`
