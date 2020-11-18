@@ -9,10 +9,10 @@ INSTALLED_APPS = (
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'upa',
-        'USER': 'computer',
-        'PASSWORD': 'computer',
         'HOST': 'postgres',
+        'NAME': 'upa',
+        'USER': 'django_admin',
+        'PASSWORD': 'django_admin',
     }
 }
 
