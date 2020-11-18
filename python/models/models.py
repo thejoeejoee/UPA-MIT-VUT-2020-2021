@@ -9,6 +9,11 @@ class Station(models.Model):
     latitude = models.FloatField()
     longitude = models.FloatField()
 
+    class Meta:
+        db_table = 'station'
+        verbose_name = 'Station'
+        verbose_name_plural = 'Stations'
+
     def __str__(self):
         return f'{self.wmo_id}: {self.station_name} ({self.latitude}, {self.longitude}; {self.station_height})'
 

@@ -2,7 +2,10 @@ from mongoengine import Document, ReferenceField, DictField, StringField, FloatF
 
 
 class StationDocument(Document):
-    meta = dict(collection='station')
+    meta = dict(
+        collection='station',
+        ordering=['wmo_id'],
+    )
 
     wmo_id = IntField(primary_key=True)
     location = StringField()
@@ -16,7 +19,10 @@ class StationDocument(Document):
 
 
 class MeasurementDocument(Document):
-    meta = dict(collection='measurement')
+    meta = dict(
+        collection='measurement',
+        ordering=['time_period'],
+    )
 
     station = ReferenceField(StationDocument, required=True)
     time_period = DateTimeField()

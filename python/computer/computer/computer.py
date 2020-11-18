@@ -1,9 +1,12 @@
 from models import MeasurementDocument
+from .syncer import Syncer
 
 
 class Computer(object):
 
     def run(self):
+        Syncer.sync_stations()
+
         pipeline = [
             {
                 "$match": {
@@ -39,6 +42,9 @@ class Computer(object):
 
                     "avg_air_temperature": {"$avg": "$air_temperature"},
                 },
+            },
+            {
+                "$sort": {"_id.day": 1, "_id.station_id": 1},
             },
         ]
         data = MeasurementDocument.objects().aggregate(pipeline)
