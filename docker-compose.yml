@@ -111,8 +111,8 @@ services:
       - 8082:8080
 
   # managing Django models in postgres
-  # run as $ docker-compose run models <django-command>
-  models:
+  # run as $ docker-compose run django-admin <django-command>
+  django-admin:
     build:
       context: ./python
       dockerfile: models.Dockerfile
