@@ -45,6 +45,8 @@ services:
     volumes:
       - ./python/computer/:/usr/src/app
       - ./python/models/:/usr/src/app/models
+    environment:
+      DJANGO_SETTINGS_MODULE: models.settings
 
   redis:
     container_name: redis
@@ -107,6 +109,23 @@ services:
       ADMINER_DESIGN: nette
     ports:
       - 8082:8080
+
+  # managing Django models in postgres
+  # run as $ docker-compose run models <django-command>
+  models:
+    build:
+      context: ./python
+      dockerfile: models.Dockerfile
+    container_name: models
+    command: check
+    depends_on:
+      - postgres
+    env_file:
+      - ./.local.env
+    volumes:
+      - ./python/models/:/usr/src/app/models
+    environment:
+      DJANGO_SETTINGS_MODULE: models.settings
 
 volumes:
   mongo-data:
