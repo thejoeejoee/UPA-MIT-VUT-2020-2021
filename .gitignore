@@ -1,4 +1,7 @@
 .local.env
 
+python
+__pycache__
+pocasi
 doc/*.aux
 doc/*.log
