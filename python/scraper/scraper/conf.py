@@ -1,5 +1,34 @@
+from models import RainfallDocument, LimitTemperatureDocument, MaximumGustSpeedDocument, MaximumGustDirectionDocument
+
 pass_e = lambda e: e
 el_v = lambda data_type: lambda e: data_type(e.get("#text"))
+rainfall = lambda e: RainfallDocument(
+    start_time=str(e.get("@start-time-utc")),
+    end_time=str(e.get("@end-time-utc")),
+    units=str(e.get("@units")),
+    value=el_v(float)(e)
+)
+temperature = lambda e: LimitTemperatureDocument(
+    start_time=str(e.get("@start-time-utc")),
+    end_time=str(e.get("@end-time-utc")),
+    timestamp=str(e.get("@time-utc")),
+    units=str(e.get("@units")),
+    value=el_v(float)(e)
+)
+speed = lambda e: MaximumGustSpeedDocument(
+    start_time=str(e.get("@start-time-utc")),
+    end_time=str(e.get("@end-time-utc")),
+    timestamp=str(e.get("@time-utc")),
+    units=str(e.get("@units")),
+    value=el_v(float)(e)
+)
+direction = lambda e: MaximumGustDirectionDocument(
+    start_time=str(e.get("@start-time-utc")),
+    end_time=str(e.get("@end-time-utc")),
+    timestamp=str(e.get("@time-utc")),
+    value=el_v(str)(e)
+)
+
 
 MEASUREMENT_ATTRS_MAPPING = {
     'time_period': el_v(str),
@@ -25,15 +54,13 @@ MEASUREMENT_ATTRS_MAPPING = {
     'gust_kmh': el_v(int),
     'wind_gust_spd': el_v(int),
 
-    # TODO: filter & remap dict attrs
-    'rainfall': pass_e,
-    'rainfall_24hr': pass_e,
-    'maximum_air_temperature': pass_e,
-    'minimum_air_temperature': pass_e,
-    'maximum_gust_spd': pass_e,
-    'maximum_gust_kmh': pass_e,
-    'maximum_gust_dir': pass_e,
-    # ...
+    'rainfall': rainfall,
+    'rainfall_24hr': rainfall,
+    'maximum_air_temperature': temperature,
+    'minimum_air_temperature': temperature,
+    'maximum_gust_spd': speed,
+    'maximum_gust_kmh': speed,
+    'maximum_gust_dir': direction,
 }
 
 MEASUREMENT_ATTRS_TO_SKIP = set(

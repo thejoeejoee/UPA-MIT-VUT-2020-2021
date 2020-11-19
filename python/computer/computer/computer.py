@@ -1,4 +1,5 @@
 from models import MeasurementDocument
+from models.models import Station, Temperature, Rainfall
 from .syncer import Syncer
 
 
@@ -48,7 +49,7 @@ class Computer(object):
             },
         ]
 
-        tempereture_ranking_pipeline = [
+        tempereture_pipeline = [
             {
                 "$match": {
                     "air_temperature": {"$ne": None},
@@ -69,30 +70,23 @@ class Computer(object):
             },
             {
                 "$project": {
-                    "station_id": "$station._id",
+                    "_id": "$station._id",
+                    # "timestamp": {"$dateToString": {"format": "%Y-%m-%dT%H:%M:%S%z", "timezone": "$station.location", "date": "$time_period"}},
+                    "timestamp": {"$dateToString": {"format": "%Y-%m-%dT%H:%M:%S%z", "date": "$time_period"}},
                     "air_temperature": "$air_temperature",
                 },
             },
             {
-                "$group": {
-                    "_id": {
-                        "station_id": "$station_id",
-                    },
-
-                    "avg_air_temperature": {"$avg": "$air_temperature"},
-                },
-            },
-            {
-                "$sort": {"avg_air_temperature": 1},
+                "$sort": {"_id": 1, "timestamp": 1},
             },
         ]
 
-        rainfall_ranking_pipeline = [
+        rainfall_pipeline = [
             {
                 "$match": {
                     "rainfall_24hr": {"$ne": None},
+                    "rainfall": {"$ne": None},
                 },
-
             },
             {
                 "$lookup":
@@ -108,51 +102,27 @@ class Computer(object):
             },
             {
                 "$project": {
-                    "station_id": "$station._id",
-                    "day": {"$dateToString": {"format": "%Y-%m-%d", "date": "$time_period"}},
-                    "time": {"$dateToString": {"format": "%H:%M:%S", "date": "$time_period"}},
-                    "history_rainfall": { "$ifNull": [ { "$toDouble": "$rainfall_24hr.#text" }, 0.0]} ,
-                    "actual_rainfall": { "$ifNull": [ { "$toDouble": "$rainfall.#text" }, 0.0]},
+                    "_id": "$station._id",
+                    # "timestamp": {"$dateToString": {"format": "%Y-%m-%dT%H:%M:%S%z", "timezone": "$station.location", "date": "$rainfall.end_time"}},
+                    "timestamp": {"$dateToString": {"format": "%Y-%m-%dT%H:%M:%S%z", "date": "$rainfall.end_time"}},
+                    "rainfall_from_9": "$rainfall.value",
+                    "rainfall_24hr_to_9": "$rainfall_24hr.value",
                 },
             },
             {
-                "$sort": {"station_id": 1, "day": 1, "time": 1},
-            },
-            {
-                "$group": {
-                    "_id": {
-                        "station_id": "$station_id",
-                        "day": "$day",
-                    },
-
-                    "time": {"$last": "$time"},
-                    "history_rainfall": {"$last": "$history_rainfall"},
-                    "actual_rainfall": {"$last": "$actual_rainfall"},
-                },
-            },
-            {
-                "$group": {
-                    "_id": {
-                        "station_id": "$_id.station_id",
-                    },
-                    "all_history_rainfalls": {"$sum": "$history_rainfall"},
-                    "last_rainfall": {"$last": "$actual_rainfall"},
-                },
-            },
-            {
-                "$project": {
-                    "_id": "$_id",
-                    "rainfalls": { "$add": [ "$all_history_rainfalls", "$last_rainfall" ] },
-                },
-            },
-            {
-                "$sort": {"rainfalls": 1},
+                "$sort": {"_id": 1, "timestamp": 1},
             },
         ]
 
-        data = MeasurementDocument.objects().aggregate(average_day_temperature_pipeline)
+        data = MeasurementDocument.objects().aggregate(tempereture_pipeline)
         for item in data:
-            print(item)
+            station = Station.objects.get(wmo_id=item['_id'])
+            Temperature.objects.update_or_create(station=station, timestamp=item['timestamp'], temperature=item['air_temperature'])
+        
+        data = MeasurementDocument.objects().aggregate(rainfall_pipeline)
+        for item in data:
+            station = Station.objects.get(wmo_id=item['_id'])
+            Rainfall.objects.update_or_create(station=station, timestamp=item['timestamp'], rainfall_from_morning=item['rainfall_from_9'], rainfall_last_day=item['rainfall_24hr_to_9'])
 
 
 __all__ = ['Computer']

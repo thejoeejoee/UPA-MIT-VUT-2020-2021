@@ -1,5 +1,4 @@
-from mongoengine import Document, ReferenceField, DictField, StringField, FloatField, DateTimeField, IntField
-
+from mongoengine import Document, EmbeddedDocument, ReferenceField, DictField, StringField, FloatField, DateTimeField, IntField, EmbeddedDocumentField
 
 class StationDocument(Document):
     meta = dict(
@@ -17,6 +16,27 @@ class StationDocument(Document):
     def __str__(self):
         return f'{self.wmo_id}: {self.station_name} ({self.latitude}, {self.longitude}; {self.station_height})'
 
+class PeriodDocument():
+    start_time = DateTimeField()
+    end_time = DateTimeField()
+
+class RainfallDocument(PeriodDocument, EmbeddedDocument):
+    units = StringField()
+    value = FloatField()
+
+class LimitTemperatureDocument(PeriodDocument, EmbeddedDocument):
+    timestamp = DateTimeField()
+    units = StringField()
+    value = FloatField()
+
+class MaximumGustSpeedDocument(PeriodDocument, EmbeddedDocument):
+    timestamp = DateTimeField()
+    units = StringField()
+    value = FloatField()
+
+class MaximumGustDirectionDocument(PeriodDocument, EmbeddedDocument):
+    timestamp = DateTimeField()
+    value = StringField()
 
 class MeasurementDocument(Document):
     meta = dict(
@@ -47,10 +67,10 @@ class MeasurementDocument(Document):
     wind_spd = IntField()
     gust_kmh = IntField()
     wind_gust_spd = IntField()
-    rainfall = DictField()
-    rainfall_24hr = DictField()
-    maximum_air_temperature = DictField()
-    minimum_air_temperature = DictField()
-    maximum_gust_spd = DictField()
-    maximum_gust_kmh = DictField()
-    maximum_gust_dir = DictField()
+    rainfall = EmbeddedDocumentField(RainfallDocument)
+    rainfall_24hr = EmbeddedDocumentField(RainfallDocument)
+    maximum_air_temperature = EmbeddedDocumentField(LimitTemperatureDocument)
+    minimum_air_temperature = EmbeddedDocumentField(LimitTemperatureDocument)
+    maximum_gust_spd = EmbeddedDocumentField(MaximumGustSpeedDocument)
+    maximum_gust_kmh = EmbeddedDocumentField(MaximumGustSpeedDocument)
+    maximum_gust_dir = EmbeddedDocumentField(MaximumGustDirectionDocument)

@@ -3,6 +3,7 @@ from decouple import AutoConfig
 config = AutoConfig()
 
 INSTALLED_APPS = (
+    'django_extensions',
     'models.apps.ModelsAppConfig',
 )
 

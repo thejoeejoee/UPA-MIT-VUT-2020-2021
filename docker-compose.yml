@@ -17,6 +17,8 @@ services:
       - ./python/models/:/usr/src/app/models
 
       - ./pocasi/:/data/scraped/
+    environment:
+      DJANGO_SETTINGS_MODULE: models.settings
 
   mongo:
     image: mongo:4.4.1
