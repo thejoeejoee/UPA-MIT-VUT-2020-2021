@@ -1,5 +1,7 @@
+from django.utils import dateparse
+
 from models import MeasurementDocument
-from models.models import Station, Temperature, Rainfall
+from models.models import Temperature, Rainfall
 from .syncer import Syncer
 
 
@@ -70,16 +72,49 @@ class Computer(object):
             },
             {
                 "$project": {
-                    "_id": "$station._id",
+                    "station": "$station._id",
                     # "timestamp": {"$dateToString": {"format": "%Y-%m-%dT%H:%M:%S%z", "timezone": "$station.location", "date": "$time_period"}},
                     "timestamp": {"$dateToString": {"format": "%Y-%m-%dT%H:%M:%S%z", "date": "$time_period"}},
+                    "month": {"$dateToString": {"format": "%Y-%m", "date": "$time_period"}},
                     "air_temperature": "$air_temperature",
                 },
             },
             {
-                "$sort": {"_id": 1, "timestamp": 1},
+                "$sort": {"station": 1, "timestamp": 1},
+            },
+            {
+                "$group": {
+                    "_id": ["$station", "$month"],
+                    "measurements": {
+                        "$push": {
+                            "timestamp": "$timestamp",
+                            "air_temperature": "$air_temperature",
+                        },
+                    },
+                    "count": {"$sum": 1}
+
+                },
+            },
+            {
+                "$sort": {"_id.0": 1, "_id.1": 1},
             },
         ]
+
+        data = MeasurementDocument.objects().aggregate(tempereture_pipeline)
+        for batch in data:
+            (station, *_), batch_size, measurements = batch.get('_id'), batch.get('count'), batch.get('measurements')
+
+            with Temperature.bulk_objects.bulk_update_or_create_context(
+                    match_field=('station_id', 'timestamp'),
+                    update_fields=('temperature',),
+                    batch_size=batch_size,
+            ) as bulk:
+                for measurement in measurements:
+                    bulk.queue(Temperature(
+                        station_id=station,
+                        timestamp=dateparse.parse_datetime(measurement['timestamp']),
+                        temperature=measurement['air_temperature'],
+                    ))
 
         rainfall_pipeline = [
             {
@@ -102,9 +137,10 @@ class Computer(object):
             },
             {
                 "$project": {
-                    "_id": "$station._id",
+                    "station": "$station._id",
                     # "timestamp": {"$dateToString": {"format": "%Y-%m-%dT%H:%M:%S%z", "timezone": "$station.location", "date": "$rainfall.end_time"}},
                     "timestamp": {"$dateToString": {"format": "%Y-%m-%dT%H:%M:%S%z", "date": "$rainfall.end_time"}},
+                    "month": {"$dateToString": {"format": "%Y-%m", "date": "$time_period"}},
                     "rainfall_from_9": "$rainfall.value",
                     "rainfall_24hr_to_9": "$rainfall_24hr.value",
                 },
@@ -112,17 +148,41 @@ class Computer(object):
             {
                 "$sort": {"_id": 1, "timestamp": 1},
             },
+            {
+                "$group": {
+                    "_id": ["$station", "$month"],
+                    "measurements": {
+                        "$push": {
+                            "timestamp": "$timestamp",
+                            "rainfall_from_9": "$rainfall_from_9",
+                            "rainfall_24hr_to_9": "$rainfall_24hr_to_9",
+                        },
+                    },
+                    "count": {"$sum": 1}
+
+                },
+            },
+            {
+                "$sort": {"_id.0": 1, "_id.1": 1},
+            },
         ]
 
-        data = MeasurementDocument.objects().aggregate(tempereture_pipeline)
-        for item in data:
-            station = Station.objects.get(wmo_id=item['_id'])
-            Temperature.objects.update_or_create(station=station, timestamp=item['timestamp'], temperature=item['air_temperature'])
-        
         data = MeasurementDocument.objects().aggregate(rainfall_pipeline)
-        for item in data:
-            station = Station.objects.get(wmo_id=item['_id'])
-            Rainfall.objects.update_or_create(station=station, timestamp=item['timestamp'], rainfall_from_morning=item['rainfall_from_9'], rainfall_last_day=item['rainfall_24hr_to_9'])
+        for batch in data:
+            (station, *_), batch_size, measurements = batch.get('_id'), batch.get('count'), batch.get('measurements')
+
+            with Rainfall.bulk_objects.bulk_update_or_create_context(
+                    update_fields=('rainfall_from_morning', 'rainfall_last_day'),
+                    match_field=('station_id', 'timestamp'),
+                    batch_size=batch_size
+            ) as bulk:
+                for measurement in measurements:
+                    bulk.queue(Rainfall(
+                        station_id=station,
+                        timestamp=dateparse.parse_datetime(measurement['timestamp']),
+                        rainfall_from_morning=measurement['rainfall_from_9'],
+                        rainfall_last_day=measurement['rainfall_24hr_to_9'],
+                    ))
 
 
 __all__ = ['Computer']

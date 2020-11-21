@@ -3,6 +3,7 @@ from decouple import AutoConfig
 config = AutoConfig()
 
 INSTALLED_APPS = (
+    'bulk_update_or_create',
     'django_extensions',
     'models.apps.ModelsAppConfig',
 )
@@ -19,5 +20,7 @@ DATABASES = {
 
 # SECURITY WARNING: Modify this secret key if using in production!
 SECRET_KEY = config('SECRET_KEY')
+
+USE_TZ = True
 
 del config
