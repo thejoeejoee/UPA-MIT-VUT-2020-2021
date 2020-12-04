@@ -163,4 +163,49 @@ která vykonala konkrétní měření, se odkazuje pomocí identifikátoru stani
         naměřená rychlost větru v~uzlech a kilometrech za hodinu a jeho směr od půlnoci do půlnoci z~3sekundových měření
     \end{itemize}
 \end{itemize}
+
+
+\section{Zvolený SQL model pro uložení relační databáze}
+
+\todo{nejlépe vytvořit diagram databáze/možná ER, ale možná to tady vůbec nemusí být}
+
+\section{Implementace projektu a workflow}
+
+Projekt byl rozdělen do několika částí - mongo, scraper, postgres, computer, redis a superset. Implementace jednotlivých částí projektu byla propojena softwarem Docker. Každá z vyjmenovaných částí byla reprezentována pomocí odpovídajícího Docker kontejneru a tedy běží jako samotný podprogram a všechny dohromady tvoří celou aplikaci. V následující sekci budou popsány kontejnery a jejich funkcionalita.
+
+\subsection{mongo}
+
+Kontejner mongo vytvoří instanci MongoDB a vytvoří uživatele pro kontejner \textbf{scraper} a \textbf{computer}. K mongu patří jeden kontejner navíc, který je určen pro administrátora.
+
+\subsection{scraper}
+
+Scraper závisí na kontejneru mongo a slouží ke stažení dat z určeného serveru, k parsování získaných dat do vyhovujícího formátu a uložení do databáze. Přesněji se scraper nejprve připojí na FTP server s požadovanými meteorologickými daty  ve formátu XML a stáhne je. Alternativně může také data načíst z lokálního úložiště. Následně data naparsuje do formátu uvedeného v sekci \ref{sec:zvoleny-zpusob-ulozeni-surovych-dat}, který je definován pomocí Mongo dokumentů a nakonec je uloží do instance \textbf{MongoDB}.
+
+
+\subsection{postgres}
+
+Tento kontejner vytvoří instanci SQL relační databáze PostgreSQL a v ní vytvoří databázi a uživatele s různými rolemi a právy. S postgresem má souvisí další dva kontejnery, které je určen pro administrátora - jeden je postgres administrátor a druhý django administrátor, který se stará o Django modely v postgresu.
+
+\subsection{computer}
+
+Computer závisí na kontejnerech mongo a postgres, mezi kterými synchronizuje meteorologické stanice z datábází mongo do postgresu Především však vykonává dotazy pomocí operací nad databázemi tím způsobem, aby byly splněny body A a B ze zadání.
+
+Podrobnější popis dotazů:
+
+\paragraph{Dotaz A:}
+
+\todo{možná popsat pipeliny těch dotazů - lookup -> project -> group atd..}
+
+\paragraph{Dotaz B:}
+
+
+\subsection{redis}
+
+Kontejner redis vytvoří instanci Redis.
+
+
+\subsection{superset}
+
+Superset závisí na kontejnerech postgres a redis, se kterými vyměnuje data. Vytvoří instanci vizualizační platformy Superset a propojí s úložištěm redis, který používá jako cache.
+
 \end{document}
