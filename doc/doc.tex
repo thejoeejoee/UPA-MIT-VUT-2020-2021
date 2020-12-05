@@ -29,84 +29,89 @@
 \colorlet{commentstyle}{purple!90!white}
 
 \lstset{
-    captionpos=b,
-    belowskip=0pt,
+captionpos=b,
+belowskip=0pt,
 }
 
 \lstdefinelanguage{XML}{
-    morestring=[b]",
-    morestring=[s]{>}{<},
-    morecomment=[s]{<?}{?>},
-    basicstyle=\color{codeprimary}\ttfamily,
-    keywordstyle=\color{keywordstyle}\bfseries,
-    commentstyle=\color{commentstyle}\ttfamily,
-    stringstyle=\color{stringstyle},
-    columns=fullflexible,
-    showstringspaces=false,
+morestring=[b]",
+morestring=[s]{>}{<},
+morecomment=[s]{<?}{?>},
+basicstyle=\color{codeprimary}\ttfamily,
+keywordstyle=\color{keywordstyle}\bfseries,
+commentstyle=\color{commentstyle}\ttfamily,
+stringstyle=\color{stringstyle},
+columns=fullflexible,
+showstringspaces=false,
 }
 \renewcommand\lstlistingname{Kód}
 
 \hypersetup{
-    colorlinks,
-    linkcolor={codeprimary},
-    citecolor={codeprimary},
-    urlcolor={codeprimary}
+colorlinks,
+linkcolor={codeprimary},
+citecolor={codeprimary},
+urlcolor={codeprimary}
 }
 
 \begin{document}
 
-\begin{center}
-	\section*{UPA: Ukládání a příprava dat -- 1. část projektu}
-\end{center}
+    \begin{center}
+        \section*{UPA: Ukládání a příprava dat -- dokumentace}
+    \end{center}
 
-\large{Zvolené téma: \textbf{Databáze meteorologických dat}}
+    \large{Zvolené téma: \textbf{Databáze meteorologických dat}}
 
-\large{
-	Řešitelé:
-	Bc. Josef Kolář (\textit{xkolar71}),
-	Bc. Timotej Halás (\textit{xhalas10}),
-	Bc. Vojtěch Hertl (\textit{xhertl04})
-}%
-\section{Zvolené dotazy a formulace vlastního dotazu}
-\begin{itemize}
-	\item[\textbf{A}] vytvořte žebříček nejdeštivějších/nejsušších a nejteplejších/nejchladnějších meteorologických stanic/lokalit
-	\item[\textbf{B}] najděte skupiny meteorologických stanic s~podobným počasím
-	\item[\textbf{C}] vizualizujte průměrnou teplotu vzduchu na kontinentu Austrálie i případnou interpolací hodnot
-    do regionů bez měřících stanic
-\end{itemize}%
-\section{Stručná charakteristika zvolené datové sady}
-Na FTP serveru australského meteorologického úřadu se nachází datově i formátově široká sada mapující počasí po celém
-kontinentu Austrálie -- pro účely tohoto projektu, resp. dle jeho zadání, bude k~dalšímu zpracování použit výběr sedmi
-datových souborů ve formátu XML.
+    \large{
+    Řešitelé:
+    Bc. Josef Kolář (\textit{xkolar71}),
+    Bc. Timotej Halás (\textit{xhalas10}),
+    Bc. Vojtěch Hertl (\textit{xhertl04})
+    }%
 
-Jejich sběr ze vzdáleného serveru bude mít na starost samostatný Docker kontejner s~příznačným názvem
-\texttt{scraper} -- jeho implementace bude realizována v~jazyce Python a během svého běhu se připojí na FTP server,
-detekuje aktualizované soubory od poslední kontroly, ty novější stáhne na lokální úložiště a následně je uloží
-do databáze MongoDB. Ta běží v~samostatném kontejneru a její kolekce jsou popsány v~sekci
-\nameref{sec:zvoleny-zpusob-ulozeni-surovych-dat}.
 
-Jednou z~důležitých částí datových XML souborů je specifikace stanice, ve které probíhají měření -- ukázka toho
-fragmentu datové sady je umístěna níže v~\nameref{lst:station-example}. Mezi atributy důležité pro řešení úloh
-v~tomto projektu je především dvojice \mbox{\texttt{[lat, lon]}} určující geografické umístění stanice, unikátní
-identifikátor stanice \texttt{wmo-id} (který bude použit pro navázání jednotlivých měření) a samotné jméno stanice
-dostupné z~dvojice atributů \texttt{stn-name} a \texttt{description}.
+    \section{Zvolené dotazy a formulace vlastního dotazu}
+    \begin{itemize}
+        \item[\textbf{A}] vytvořte žebříček nejdeštivějších/nejsušších a nejteplejších/nejchladnějších meteorologických stanic/lokalit
+        \item[\textbf{B}] najděte skupiny meteorologických stanic s~podobným počasím
+        \item[\textbf{C}] vizualizujte průměrnou teplotu vzduchu na kontinentu Austrálie i případnou interpolací hodnot
+        do regionů bez měřících stanic
+    \end{itemize}%
 
-\begin{lstlisting}[language=XML,caption={Ukázka způsobu uložení informací týkajících se konkrétní stanice.},
-label=lst:station-example]
+
+    \section{Stručná charakteristika zvolené datové sady}
+    Na FTP serveru australského meteorologického úřadu se nachází datově i formátově široká sada mapující počasí po celém
+    kontinentu Austrálie -- pro účely tohoto projektu, resp. dle jeho zadání, bude k~dalšímu zpracování použit výběr sedmi
+    datových souborů ve formátu XML.
+
+    Jejich sběr ze vzdáleného serveru bude mít na starost samostatný Docker kontejner s~příznačným názvem
+    \texttt{scraper} -- jeho implementace bude realizována v~jazyce Python a během svého běhu se připojí na FTP server,
+    detekuje aktualizované soubory od poslední kontroly, ty novější stáhne na lokální úložiště a následně je uloží
+    do databáze MongoDB. Ta běží v~samostatném kontejneru a její kolekce jsou popsány
+    v~sekci~\nameref{sec:zvoleny-zpusob-ulozeni-surovych-dat}.
+
+    Jednou z~důležitých částí datových XML souborů je specifikace stanice, ve které probíhají měření -- ukázka toho
+    fragmentu datové sady je umístěna níže v~\nameref{lst:station-example}. Mezi atributy důležité pro řešení úloh
+    v~tomto projektu je především dvojice \mbox{\texttt{[lat, lon]}} určující geografické umístění stanice, unikátní
+    identifikátor stanice \texttt{wmo-id} (který bude použit pro navázání jednotlivých měření) a samotné jméno stanice
+    dostupné z~dvojice atributů \texttt{stn-name} a \texttt{description}.
+
+    \begin{lstlisting}[language=XML,caption={Ukázka způsobu uložení informací týkajících se konkrétní stanice.},
+    label=lst:station-example]
 <station
     wmo-id="94648" forecast-district-id="SA_PW001"
     stn-name="ADELAIDE (WEST TERRACE / NGAYIRDAPIRA)" type="AWS"
     lat="-34.9257" lon="138.5832" stn-height="29.32"
     description="Adelaide (West Terrace /  ngayirdapira)"
-><!-- all measurements from this station based on time --></station>\end{lstlisting}
-Obsahem těchto elementů jsou poté elementy typu \texttt{<period />}, jehož atribut \texttt{time-utc} určuje čas
-konkrétního měření. Při zanoření do těchto elementů se poté dostáváme přímo ke změřeným datům, která jsou uložena
-v~elementech typu \texttt{<element />} -- ty ve všech případech obsahují atribut \texttt{type}, který značí, o~jaký typ
-změřených dat se jedná. Samotná data jsou poté uložena jako obsah elementu a jejich jednotka, je-li to nutné, je
-doplněna v~atributu \texttt{units}. Krácená varianta tohoto uložení se nachází níže v~kódu
-\nameref{lst:measurement-example}.
-\begin{lstlisting}[language=XML,caption={Ukázka uložení meteorologických dat změřených v~\textit{21:50:00 UTC 26.9
-.2020}}, label=lst:measurement-example]
+><!-- all measurements from this station based on time --></station>
+    \end{lstlisting}
+    Obsahem těchto elementů jsou poté elementy typu \texttt{<period />}, jehož atribut \texttt{time-utc} určuje čas
+    konkrétního měření. Při zanoření do těchto elementů se poté dostáváme přímo ke změřeným datům, která jsou uložena
+    v~elementech typu \texttt{<element />} -- ty ve všech případech obsahují atribut \texttt{type}, který značí, o~jaký typ
+    změřených dat se jedná. Samotná data jsou poté uložena jako obsah elementu a jejich jednotka, je-li to nutné, je
+    doplněna v~atributu \texttt{units}. Krácená varianta tohoto uložení se nachází níže v~kódu
+    \nameref{lst:measurement-example}.
+    \begin{lstlisting}[language=XML,caption={Ukázka uložení meteorologických dat změřených v~\textit{21:50:00 UTC 26.9
+    .2020}}, label=lst:measurement-example]
 <period time-utc="2020-09-26T21:50:00+00:00">
     <level type="surface">
         <element units="Celsius" type="apparent_temp">6.4</element>
@@ -123,89 +128,118 @@ doplněna v~atributu \texttt{units}. Krácená varianta tohoto uložení se nach
         <element units="deg" type="wind_dir_deg">69</element>
         <element units="km/h" type="wind_spd_kmh">7</element>
     </level>
-</period>\end{lstlisting}%
-\section{Zvolený způsob uložení uložení surových dat}\label{sec:zvoleny-zpusob-ulozeni-surovych-dat}
-V~rámci této databáze se bude jednat o~kolekce \texttt{station} a \texttt{measurement}. První jmenovaná ukládá
-informace o~samotné meteorologické stanici provozující měření.
-Kolekce \texttt{measurement} pak obsahuje všechna vykonaná měření a na stanici,
-která vykonala konkrétní měření, se odkazuje pomocí identifikátoru stanice.
-\begin{itemize}
-	\item \textbf{station}
-	\begin{itemize}[label=\textperiodcentered]
-    	\item \texttt{wmo\_id} -- unikátní identifikátor stanice
-        \item \texttt{location} -- stát a město, kde se stanice nachází
-        \item \texttt{station\_name} -- název stanice
-        \item \texttt{station\_height} -- nadmořská výška v~metrech, ve které se stanice nachází
-        \item \texttt{latitude}, \texttt{longitude} -- zeměpisná poloha stanice
+</period>
+    \end{lstlisting}%
+
+
+    \section{Zvolený způsob uložení uložení surových dat}\label{sec:zvoleny-zpusob-ulozeni-surovych-dat}
+    V~rámci této databáze se bude jednat o~kolekce \texttt{station} a \texttt{measurement}. První jmenovaná ukládá
+    informace o~samotné meteorologické stanici provozující měření.
+    Kolekce \texttt{measurement} pak obsahuje všechna vykonaná měření a na stanici,
+    která vykonala konkrétní měření, se odkazuje pomocí identifikátoru stanice.
+    \begin{itemize}
+        \item \textbf{station}
+        \begin{itemize}[label=\textperiodcentered]
+            \item \texttt{wmo\_id} -- unikátní identifikátor stanice
+            \item \texttt{location} -- stát a město, kde se stanice nachází
+            \item \texttt{station\_name} -- název stanice
+            \item \texttt{station\_height} -- nadmořská výška v~metrech, ve které se stanice nachází
+            \item \texttt{latitude}, \texttt{longitude} -- zeměpisná poloha stanice
+        \end{itemize}
+        \item \textbf{measurement}
+        \begin{itemize}[label=\textperiodcentered]
+            \item \texttt{station} -- odkaz na unikátní identifikátor stanice
+            \item \texttt{time\_period} -- čas měření
+            \item \texttt{delta\_t} -- indikátor rychlosti vypařování
+            \item \texttt{dew\_point} -- teplota, na kterou musí být vzduch zchlazen, aby došlo k~jeho
+            kondenzaci\footnote{též tzv. rosný bod -- \url{https://en.wikipedia.org/wiki/Dew\_point}}
+            \item \texttt{rel\_humidity} -- relativní vlhkost vzduchu
+            \item \texttt{vis\_km} -- viditelnost v~kilometrech
+            \item \texttt{weather} -- typ počasí slovně
+            \item \texttt{pres}, \texttt{msl\_pres}, \texttt{qnh\_press} -- údaje popisující atmosferický tlak
+            \item \texttt{rain\_hour}, \texttt{rain\_ten} -- množství srážek v~milimetrech
+            \item \texttt{air\_temperature}, \texttt{apparent\_temp} -- pocitová a reálná teplota vzduchu
+            \item \texttt{cloud}, \texttt{cloud\_oktas}, \texttt{cloud\_type\_id} -- typ oblaků, jejich pokrytí oblohy a slovní popis oblačnosti
+            \item \texttt{wind\_dir}, \texttt{wind\_dir\_deg} -- směr větru popsán slovně a úhlem
+            \item \texttt{wind\_spd}, \texttt{wind\_spd\_kmh} -- rychlost větru v~uzelch a kilometrech za hodinu získáná průměrem za 10 minut
+            \item \texttt{wind\_gust\_spd}, \texttt{gust\_kmh} -- rychlost větru v~uzelch a kilometrech za hodinu získáná
+            ze 3sekundových měření
+            \item \texttt{rainfall}, \texttt{rainfall\_24hr} -- počet srážek v~milimetrech od ranních 9:00 a historický
+            údaj z~předešlého dne
+            \item \texttt{minimum\_air\_temperature}, \texttt{maximum\_air\_temperature} -- minimální a maximální naměřená teplota od 18:00 do 9:00
+            \item \texttt{maximum\_gust\_spd}, \texttt{maximum\_gust\_kmh}, \texttt{maximum\_gust\_dir} -- maximální
+            naměřená rychlost větru v~uzlech a kilometrech za hodinu a jeho směr od půlnoci do půlnoci z~3sekundových měření
+        \end{itemize}
     \end{itemize}
-	\item \textbf{measurement}
-	\begin{itemize}[label=\textperiodcentered]
-        \item \texttt{station} -- odkaz na unikátní identifikátor stanice
-        \item \texttt{time\_period} -- čas měření
-        \item \texttt{delta\_t} -- indikátor rychlosti vypařování
-        \item \texttt{dew\_point} -- teplota, na kterou musí být vzduch zchlazen, aby došlo k~jeho
-        kondenzaci\footnote{též tzv. rosný bod -- \url{https://en.wikipedia.org/wiki/Dew\_point}}
-        \item \texttt{rel\_humidity} -- relativní vlhkost vzduchu
-        \item \texttt{vis\_km} -- viditelnost v~kilometrech
-        \item \texttt{weather} -- typ počasí slovně
-        \item \texttt{pres}, \texttt{msl\_pres}, \texttt{qnh\_press} -- údaje popisující atmosferický tlak
-        \item \texttt{rain\_hour}, \texttt{rain\_ten} -- množství srážek v~milimetrech
-        \item \texttt{air\_temperature}, \texttt{apparent\_temp} -- pocitová a reálná teplota vzduchu
-        \item \texttt{cloud}, \texttt{cloud\_oktas}, \texttt{cloud\_type\_id} -- typ oblaků, jejich pokrytí oblohy a slovní popis oblačnosti
-        \item \texttt{wind\_dir}, \texttt{wind\_dir\_deg} -- směr větru popsán slovně a úhlem 
-        \item \texttt{wind\_spd}, \texttt{wind\_spd\_kmh} -- rychlost větru v~uzelch a kilometrech za hodinu získáná průměrem za 10 minut
-        \item \texttt{wind\_gust\_spd}, \texttt{gust\_kmh} -- rychlost větru v~uzelch a kilometrech za hodinu získáná
-        ze 3sekundových měření
-        \item \texttt{rainfall}, \texttt{rainfall\_24hr} -- počet srážek v~milimetrech od ranních 9:00 a historický
-        údaj z~předešlého dne
-        \item \texttt{minimum\_air\_temperature}, \texttt{maximum\_air\_temperature} -- minimální a maximální naměřená teplota od 18:00 do 9:00
-        \item \texttt{maximum\_gust\_spd}, \texttt{maximum\_gust\_kmh}, \texttt{maximum\_gust\_dir} -- maximální
-        naměřená rychlost větru v~uzlech a kilometrech za hodinu a jeho směr od půlnoci do půlnoci z~3sekundových měření
-    \end{itemize}
-\end{itemize}
 
+    \section{Implementace projektu a workflow}
 
-\section{Zvolený SQL model pro uložení relační databáze}
+    Projekt byl rozdělen do několika Docker kontejnerů, popsaných v~souboru
+    \mbox{\texttt{docker-compose.yml}}
+    -- konkrétně se jedná o~hlavní kontejnery
+    \texttt{scraper}, \texttt{mongo}, \texttt{computer}, \texttt{postgres},
+    \texttt{superset}, pomocné kontejnery \texttt{django-admin} a \texttt{redis},
+    a administrační kontejnery \texttt{mongo-admin} a \texttt{postgres-admin}.
+    V~následující části budou popsány základní zodpovědnosti hlavních kontejnerů a důvody pro zavedení dalších
+    kontejnerů.
 
-\todo{nejlépe vytvořit diagram databáze/možná ER, ale možná to tady vůbec nemusí být}
+    \subsection{mongo}
+    V~Docker kontejneru \texttt{mongo} běží instance nerelační databáze Mongo DB ve verzi 4.4.1 k~uložení načtených dat
+    ze zdrojových souborů. Konkrétní podoba kolekcí odpovídá popisu v~kapitole~\ref{sec:zvoleny-zpusob-ulozeni-surovych-dat},
+    jedná se o~kolekci \texttt{station} s~daty o~stanicích a kolekci \texttt{measurement} s~daty týkajících se konkrétních
+    měření.
 
-\section{Implementace projektu a workflow}
+    Do této databáze jsou vytvořeni dva uživatelé, jeden pro kontejner \texttt{scraper} s~identickým názvem určeným pro
+    import dat -- druhý pak analogicky \texttt{computer} pro načítání dat pro další zpracování. K~tomuto kontejneru také
+    slouží administrační kontejner \texttt{mongo-admin} s~nástrojem mongo-express verzi \texttt{0.54.0}, pomocí kterého lze
+    administrovat tuto NoSQL databázi přímo skrz webový prohlížeč.
 
-Projekt byl rozdělen do několika částí - mongo, scraper, postgres, computer, redis a superset. Implementace jednotlivých částí projektu byla propojena softwarem Docker. Každá z vyjmenovaných částí byla reprezentována pomocí odpovídajícího Docker kontejneru a tedy běží jako samotný podprogram a všechny dohromady tvoří celou aplikaci. V následující sekci budou popsány kontejnery a jejich funkcionalita.
+    \subsection{scraper}
 
-\subsection{mongo}
+    Kontejner s~identifikátorem \texttt{scraper} slouží k~importování dat ze zdrojových XML souborů do nerelační databáze --
+    jako zdroj slouží buď lokální adresář, ze kterého jsou zdrojové XML soubory, nebo vzdálený FTP server, z~jehož
+    specifické složky XML soubory tento kontejner stáhne.
+    Jeho implementace je založena na jazyku Python ve verzi 3.8.5 a
+    používá sdílenou definici dokumentů (popsaných v~\ref{sec:zvoleny-zpusob-ulozeni-surovych-dat}) pro nerelační databáze,
+    konkrétně na základě podpory ze strany knihovny \texttt{mongoengine}.
 
-Kontejner mongo vytvoří instanci MongoDB a vytvoří uživatele pro kontejner \textbf{scraper} a \textbf{computer}. K mongu patří jeden kontejner navíc, který je určen pro administrátora.
+    \subsection{postgres}
 
-\subsection{scraper}
+    Tento kontejner slouží pro instanci relační databáze PostgreSQL ve verzi \texttt{12.4} -- pro přístup do ní jsou
+    nakonfigurováni tři uživatelé, jeden pro výpočetní kontejner, další pro administraci databázového schématu
+    z~kontejneru \texttt{django-admin} a třetí pro čtení dat kontejnerem \texttt{superset} s~publikační vrstvou.
 
-Scraper závisí na kontejneru mongo a slouží ke stažení dat z určeného serveru, k parsování získaných dat do vyhovujícího formátu a uložení do databáze. Přesněji se scraper nejprve připojí na FTP server s požadovanými meteorologickými daty  ve formátu XML a stáhne je. Alternativně může také data načíst z lokálního úložiště. Následně data naparsuje do formátu uvedeného v sekci \ref{sec:zvoleny-zpusob-ulozeni-surovych-dat}, který je definován pomocí Mongo dokumentů a nakonec je uloží do instance \textbf{MongoDB}.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=.9\textwidth]{django-er-diagram.png}
+        \caption{Databázové schéma pro uložení předpočítaných výsledků v~relační databázi}
+    \end{figure}
 
+    \subsection{computer}
 
-\subsection{postgres}
+    Výpočetní kontejner založený na jazyku Python s identifikátorem \texttt{computer} slouží ke spouštění agregačních
+    dotazů nad nerelační databází v kontejneru \texttt{mongo}, zpracování výsledků a jejich následné uložení do databáze
+    v kontejneru \texttt{postgres}.
 
-Tento kontejner vytvoří instanci SQL relační databáze PostgreSQL a v ní vytvoří databázi a uživatele s různými rolemi a právy. S postgresem má souvisí další dva kontejnery, které je určen pro administrátora - jeden je postgres administrátor a druhý django administrátor, který se stará o Django modely v postgresu.
+    Podrobnější popis dotazů a jejich řešení pomocí agregací následuje:
 
-\subsection{computer}
+    \paragraph{Dotaz A:}
 
-Computer závisí na kontejnerech mongo a postgres, mezi kterými synchronizuje meteorologické stanice z datábází mongo do postgresu Především však vykonává dotazy pomocí operací nad databázemi tím způsobem, aby byly splněny body A a B ze zadání.
+    \todo{možná popsat pipeliny těch dotazů - lookup -> project -> group atd..}
 
-Podrobnější popis dotazů:
+    \paragraph{Dotaz B:}
 
-\paragraph{Dotaz A:}
+    \subsection{redis}
 
-\todo{možná popsat pipeliny těch dotazů - lookup -> project -> group atd..}
+    Kontejner redis vytvoří instanci Redis.
 
-\paragraph{Dotaz B:}
+    \subsection{superset}
 
+    Tento kontejner slouží pro instanci nástroje Apache Superset, který je určen pro publikaci a vizualizaci
+    zpracovaných dat uložených v databázi v kontejneru \texttt{postgres}. Jako pomocný kontejner pro cache slouží
+    \texttt{redis} s instancí stejnojmenné databázi typu \texttt{key-value}.
 
-\subsection{redis}
+    \section{Spuštění a práce s projektem}
 
-Kontejner redis vytvoří instanci Redis.
-
-
-\subsection{superset}
-
-Superset závisí na kontejnerech postgres a redis, se kterými vyměnuje data. Vytvoří instanci vizualizační platformy Superset a propojí s úložištěm redis, který používá jako cache.
-
+    \ldots
 \end{document}
