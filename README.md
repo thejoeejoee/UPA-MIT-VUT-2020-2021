@@ -6,7 +6,10 @@
 
 ## Initialization of services
 1. Initialize and run docker containers:
-    * ```make run```
+    * Run contaners (but next steps must be done in another CLI):
+        * ```make up```
+    * Run detached containers:
+        * ```make upd```
 1. Wait until all containers are running and then initialize superset and create admin user:
     * ```make init```
 1. Initialize database and dashboards:
@@ -31,3 +34,18 @@ To add admin through CLI:
 
 To add user through CLI:
 * ```make create-user```
+
+## Help
+To show help run:
+* ```make help```
+
+
+## Service ports
+Service | Port
+------- | ----
+```mongo-admin``` | 8081
+```postgres-admin``` | 8082
+```superset``` | 8088
+```postgres``` | 5432
+```mongo``` | 27017
+```redis``` | 6379
