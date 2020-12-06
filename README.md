@@ -43,9 +43,9 @@ To show help run:
 ## Service ports
 Service | Port
 ------- | ----
-```mongo-admin``` | 8081
-```postgres-admin``` | 8082
-```superset``` | 8088
-```postgres``` | 5432
-```mongo``` | 27017
-```redis``` | 6379
+[mongo-admin](http://localhost:8081) | 8081
+[postgres-admin](http://localhost:8082) | 8082
+[superset](http://localhost:8088) | 8088
+postgres | 5432
+mongo | 27017
+redis | 6379
