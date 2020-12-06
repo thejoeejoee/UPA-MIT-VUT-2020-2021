@@ -86,6 +86,9 @@ services:
       - 8088:8088
     volumes:
       - ./superset/config.py:/etc/superset/superset_config.py:ro
+      
+      - ./superset/datasources:/etc/superset/datasources
+      - ./superset/dashboards:/etc/superset/dashboards
 
   # admin containers
   mongo-admin:

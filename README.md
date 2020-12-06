@@ -4,19 +4,30 @@
 * Docker engine
 * Docker compose
 
-## Launch
-``
-1. Initialize docker
-docker-compose up
+## Initialization of services
+1. Initialize and run docker containers:
+    * ```make run```
+1. Wait until all containers are running and then initialize and create admin user for superset:
+    * ```make init```
+1. Initialize database and dashboards:
+    * ```make restore-superset```
 
-2. Create user for superset:
-docker-compose exec superset superset-init
+## Stopping services
+To stop all services just run:
+* ```make down```
 
-3. Login to superset and add connect postgres:
-Sources -> Databases -> +
-SQLAlchemyURI: postgresql://superset:superset@postgres/upa    
+## Managing data
+To append data to NoSQL database create directory ```pocasi``` and copy dataset there. Then run command: 
+* ```make scrape```
 
-4. 
-docker-compose run --rm django-admin migrate
-docker-compose up computer
-``
+To update SQL database with data computed from NoSQL database run:
+* ```make compute```
+
+## Managing users
+Creating users and admins can be done in two ways. It can be done through Superset GUI (provided that there is at least one admin account created) or CLI.
+
+To add admin through CLI:
+* ```make create-admin```
+
+To add user through CLI:
+* ```make create-user```
