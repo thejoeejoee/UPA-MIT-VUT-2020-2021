@@ -7,7 +7,7 @@
 ## Initialization of services
 1. Initialize and run docker containers:
     * ```make run```
-1. Wait until all containers are running and then initialize and create admin user for superset:
+1. Wait until all containers are running and then initialize superset and create admin user:
     * ```make init```
 1. Initialize database and dashboards:
     * ```make restore-superset```
