@@ -231,39 +231,39 @@ urlcolor={codeprimary}
 
     \subsection{computer}
 
-    Výpočetní kontejner založený na jazyku Python s identifikátorem \texttt{computer} slouží ke spouštění agregačních
-    dotazů nad nerelační databází v kontejneru \texttt{mongo}, zpracování výsledků a jejich následné uložení do databáze
-    v kontejneru \texttt{postgres}.
+    Výpočetní kontejner založený na jazyku Python s~identifikátorem \texttt{computer} slouží ke spouštění agregačních
+    dotazů nad nerelační databází v~kontejneru \texttt{mongo}, zpracování výsledků a jejich následné uložení do databáze
+    v~kontejneru \texttt{postgres}.
 
     Podrobnější popis dotazů a jejich řešení pomocí agregací následuje:
 
     \subsubsection{Dotaz A}
     \emph{Vytvořte žebříček nejdeštivějších/nejsušších a nejteplejších/nejchladnějších meteorologických stanic/lokalit.}
 
-    Získání dat v odpovídající struktuře a splňující podmínky prvního dotazu vychází z použití agregační \emph{pipeline}
+    Získání dat v~odpovídající struktuře a splňující podmínky prvního dotazu vychází z~použití agregační \emph{pipeline}
     odeslané na kolekci \texttt{measurement} do databáze MongoDB. Každá část dotazu je realizována samostatnou
     agregací, avšak obě sdílí následující strukturu:
     \begin{itemize}
         \item \textbf{{\textdollar}match} -- do dalšího zpracování se vezmou pouze dokumenty, která jsou validní pro
         danou část dotazu (tedy obsahují teplotu vzduchu, resp. úhrny srážek)
-        \item \textbf{{\textdollar}lookup} -- k datům měření se připojí data o stanici na základě klíče \texttt{station\_id}
-        \item \textbf{{\textdollar}unwind} -- tento krok zajistí rozexpandování nalezených stanic k každému měření --
-        vzhledem k povaze dat však ke každému měření odpovídá právě jedna stanice
-        \item \textbf{{\textdollar}project} -- do dalšího zpracování jsou vzaty v potaz pouze některé
+        \item \textbf{{\textdollar}lookup} -- k~datům měření se připojí data o~stanici na základě klíče \texttt{station\_id}
+        \item \textbf{{\textdollar}unwind} -- tento krok zajistí rozexpandování nalezených stanic k~každému měření --
+        vzhledem k~povaze dat však ke každému měření odpovídá právě jedna stanice
+        \item \textbf{{\textdollar}project} -- do dalšího zpracování jsou vzaty v~potaz pouze některé
         atributy -- zejména samotná data identifikující měření (stanice, měsíc měření, čas měření) a také samotná
         hodnota měření
         \item \textbf{{\textdollar}sort} -- dokumenty jsou seřazeny dle stanice a času pořízení (pro snazší ladění)
         \item \textbf{{\textdollar}group} -- koncové seskupení do dávek měření, které odpovídající kompozitnímu klíči
-        \texttt{[station\_id, timestamp]} a obsahují všechny měření z konkrétní stanice a času -- v
-        samotných záznamech se poté již vyskytuje pouze změřená hodnota (resp. hodnoty) a konkrétní časový otisk
+        \texttt{[station\_id, timestamp]} a obsahují všechny měření z~konkrétní stanice a času --
+v~samotných záznamech se poté již vyskytuje pouze změřená hodnota (resp. hodnoty) a konkrétní časový otisk
     \end{itemize}
     
-    V případě nejdeštivějších/nejsušších míst byl problém s tím jak hledět na data, protože srážky jsou spojitá veličina a data obsahují počet srážek v čase od 9:00 do 9:00 následujícího dne v časovým pásmu stanice. Pro jednoduchost je čas měření počtu srážek brán jak koncový čas tohoto měření.
+    V~případě nejdeštivějších/nejsušších míst byl problém s~tím jak hledět na data, protože srážky jsou spojitá veličina a data obsahují počet srážek v~čase od 9:00 do 9:00 následujícího dne v~časovým pásmu stanice. Pro jednoduchost je čas měření počtu srážek brán jak koncový čas tohoto měření.
 
-    V případě odpovědi na otázku nejdeštivějších/nejsušších stanic se naskytl problém časové lokality údajů -- úhrn
-    srážek je z pohledu datové sady spojitá veličina, ovšem uložen je diskrétně jako kumulativní množství úhrnu
+    V~případě odpovědi na otázku nejdeštivějších/nejsušších stanic se naskytl problém časové lokality údajů -- úhrn
+    srážek je z~pohledu datové sady spojitá veličina, ovšem uložen je diskrétně jako kumulativní množství úhrnu
     srážek od ranních 09:00 do 09:00 dalšího dne ve specifických časových intervalech.
-    Pro zachování jednoduchosti byla v tomto případě vzata v potaz pouze koncová hodnota předcházející vynulování
+    Pro zachování jednoduchosti byla v~tomto případě vzata v~potaz pouze koncová hodnota předcházející vynulování
     kumulované hodnoty pro následující den -- tedy poslední hodnota před ranními 09:00.
     
     \begin{figure}[H]
@@ -283,25 +283,25 @@ urlcolor={codeprimary}
     \subsubsection{Dotaz B}
     \emph{Najděte skupiny meteorologických stanic s~podobným počasím.}
 
-    Před samotným řešením problému je vhodné lokálně definovat \emph{stanice s podobným počasím} -- pro účely tohoto
-    dotazu mají dvě stanice podobné počasí, jestliže lze prokázat pozitivní korelaci mezi daty změřenými v těchto
-    stanicích v odpovídajícím čase a zároveň v rámci stanovené odchylky odpovídají statistické metriky těchto
+    Před samotným řešením problému je vhodné lokálně definovat \emph{stanice s~podobným počasím} -- pro účely tohoto
+    dotazu mají dvě stanice podobné počasí, jestliže lze prokázat pozitivní korelaci mezi daty změřenými v~těchto
+    stanicích v~odpovídajícím čase a zároveň v~rámci stanovené odchylky odpovídají statistické metriky těchto
     měřených dat. Tedy pro příklad, pro konkrétní den odpovídá střední hodnota a směrodatná odchylka teplot vzduchu
-    pro dvě \emph{stanice s podobným počasím} a zároveň je srovnatelný týdenní vývoj tohoto změřeného parametru.
+    pro dvě \emph{stanice s~podobným počasím} a zároveň je srovnatelný týdenní vývoj tohoto změřeného parametru.
 
-    Možný SQL dotaz, který splňuje specifickou část požadavku je zobrazen v \ref{lst:sql-dotaz-b} a je založen na
-    technice CTE implementované v použité databázi PostgreSQL. Jeho funkce je založena na vytvoření pomocné datové
-    sady obsahující agregovaná data tak, že pro každou stanici a týden v roce je uložena standardní odchylka a
-    střední hodnota teplot vzduchu v tom konkrétním týdnu. Takto připravená data jsou následně agregovaná dle obou
+    Možný SQL dotaz, který splňuje specifickou část požadavku je zobrazen v~\ref{lst:sql-dotaz-b} a je založen na
+    technice CTE implementované v~použité databázi PostgreSQL. Jeho funkce je založena na vytvoření pomocné datové
+    sady obsahující agregovaná data tak, že pro každou stanici a týden v~roce je uložena standardní odchylka a
+    střední hodnota teplot vzduchu v~tom konkrétním týdnu. Takto připravená data jsou následně agregovaná dle obou
     statistických ukazatelů do množin dvojic $(\text{stanice}, \text{týden v roce})$, které již odpovídají
-    \emph{stanicím s podobným počasím} -- aby došlo úspěšně ke generalizaci, jsou oba statistické ukazatele
+    \emph{stanicím s~podobným počasím} -- aby došlo úspěšně ke generalizaci, jsou oba statistické ukazatele
     zaokrouhleny na celá čísla.
 
-    Problém \emph{podobného počasí} lze přímo v modelové vrstvě řešit i mnohem sofistikovanějšími
+    Problém \emph{podobného počasí} lze přímo v~modelové vrstvě řešit i mnohem sofistikovanějšími
     metodami, například pomocí n-dimenzionálního rozmístění stanic dle změřených příznaků a následného hledání 
     skupin stanic klasifikátorem \texttt{k-means} či jiného klasifikátoru určeného ke \emph{clusterizaci}. Takto
     fungující klasifikátor by mohl, dle znalostí autorů tohoto projektu, být založen na vlastní \texttt{window}
-    funkci založené na technice CTE v rekurzivní variantě.
+    funkci založené na technice CTE v~rekurzivní variantě.
 
 \begin{figure}[H]
     \begin{lstlisting}[language=SQL]
@@ -312,7 +312,7 @@ with measurements as (
         ROUND(cast(stddev(temperature) as numeric), 0) as temperature_stddev,
         ROUND(cast(avg(temperature) as numeric), 0)    as temperature_avg
     from temperature t
-        inner join station s on s.wmo_id = t.station_id
+        inner join station s~on s.wmo_id = t.station_id
     where
         extract(year from t.timestamp) = 2020
     group by extract(weeks from t.timestamp), s.wmo_id
@@ -326,7 +326,7 @@ where
     temperature_stddev is not null and temperature_avg is not null
 group by m.temperature_avg, m.temperature_stddev;
     \end{lstlisting}
-    \caption{SQL dotaz pro nalezení \emph{stanic s podobným počasím} v konkrétních týdnech -- analogicky by vznikaly
+    \caption{SQL dotaz pro nalezení \emph{stanic s~podobným počasím} v~konkrétních týdnech -- analogicky by vznikaly
     skupiny stanic na základě dalších parametrů \emph{počasí}.}
     \label{lst:sql-dotaz-b}
 \end{figure}
@@ -339,37 +339,37 @@ group by m.temperature_avg, m.temperature_stddev;
     Vizualizace změřených hodnot pro jednotlivé stanice na dotčeném území již byla realizována jako součást odpovědi
     na dotaz A, viz snímky prezentační vrstvy \ref{fig:vizualizace-teploty} a \ref{fig:vizualizace-srazek}. Zbytek
     této sekce se bude věnovat návrhu algoritmu pro interpolaci změřených hodnot i pro území, na kterých se měřící
-    stanice nenachází a tím pádem nejsou z těchto lokalit data.
+    stanice nenachází a tím pádem nejsou z~těchto lokalit data.
 
     Následuje konceptuální návrh algoritmu pro interpolaci počasí pro celé území.
     
     \begin{enumerate}
         \item vytvoření hodnotové matice matice nad zemepisnou šířkou a délkou -- tedy $latitude \times longitude$ pro
-        rozsah území našeho zájmu s hustotou polí dle vstupního parametru (parametru, co určuje úhel/délku
+        rozsah území našeho zájmu s~hustotou polí dle vstupního parametru (parametru, co určuje úhel/délku
         polí)
         \item pro pole matice, ve kterých se nachází nenulové množství měřících stanic, provést agregaci těchto stanic
         na základě interpolovaného parametru do střední hodnoty a směrodatné odchylky
-        \item pole s nulovým počtem stanic seřadit dle množství sousedních polí s hodnotami sestupně, stanovit první
+        \item pole s~nulovým počtem stanic seřadit dle množství sousedních polí s~hodnotami sestupně, stanovit první
         jako interpolované pole a aplikovat interpolaci:
         \begin{enumerate}
-            \item z průměru středních hodnot a směrodaných odchylek okolních neprázdných polí simulovat normální
+            \item z~průměru středních hodnot a směrodaných odchylek okolních neprázdných polí simulovat normální
             rozdělení pro interpolované pole
             \item použít toto rozdělení pro vygenerování hodnoty, která je stanovena jako střední hodnota
             interpolovaného pole
             \item směrodatnou odchylku tohoto rozdělení stanovit jako směrodanou odchylku interpolovaného pole
         \end{enumerate}
-        \item iterativně doplňovat hodnoty do matice v rámci bodu 3.
+        \item iterativně doplňovat hodnoty do matice v~rámci bodu 3.
         \item ukončit iteraci, jestliže jsou všechna pole vyplněna
-        \item výstupem algoritmu jsou následně střední hodnoty z každého pole z původního rozdělení
+        \item výstupem algoritmu jsou následně střední hodnoty z~každého pole z~původního rozdělení
     \end{enumerate}
 
     \subsection{superset}
 
     Tento kontejner slouží pro instanci nástroje Apache Superset, který je určen pro publikaci a vizualizaci
-    zpracovaných dat uložených v databázi v kontejneru \texttt{postgres}. Jako pomocný kontejner pro cache slouží
-    \texttt{redis} s instancí stejnojmenné databáze typu \texttt{key-value}.
+    zpracovaných dat uložených v~databázi v~kontejneru \texttt{postgres}. Jako pomocný kontejner pro cache slouží
+    \texttt{redis} s~instancí stejnojmenné databáze typu \texttt{key-value}.
 
-    \section{Spuštění a práce s projektem}
+    \section{Spuštění a práce s~projektem}
 
     \subsection{Požadovaný software}\label{requirements}
 
@@ -378,6 +378,13 @@ group by m.temperature_avg, m.temperature_stddev;
         \item Docker engine 19.0 a vyšší
         \item Docker compose 1.25 a vyšší
     \end{itemize}
+
+    \subsection{Příprava prostředí}\label{env-reqs}
+
+    Pro lokální běh projektu je nutné vytvořit soubor s~lokálním nastavením \texttt{.local.env} -- šablona pro jeho
+    vytvoření je uložena v~\texttt{.local.env} a kromě přístupového API klíče pro externí služby prezentační vrstvy je
+     zde nutné nastavit klíče pro bezpečné uložení proměnných webových sezení nebo nastavit specifickou hodnotu pro
+     určení úrovně logování \texttt{LOG\_LEVEL}.
 
     \subsection{Inicializace služeb}\label{initialization-of-services}
 
@@ -404,7 +411,7 @@ group by m.temperature_avg, m.temperature_stddev;
             \end{itemize}
         \end{itemize}
 
-        \item Po spuštění příkazu je nutné vyčkat na nastartovanání služeb v kontejnerech a následně je možné
+        \item Po spuštění příkazu je nutné vyčkat na nastartovanání služeb v~kontejnerech a následně je možné
         inicializovat projekt následujícím příkazem (při běžíčících kontejnerech):
 
         \begin{itemize}
@@ -412,7 +419,7 @@ group by m.temperature_avg, m.temperature_stddev;
             \item[] \texttt{\textdollar\ make init}
         \end{itemize}
 
-        \item A následně je možné načíst výchozí konfiguraci pro prezentační vrstvu:
+        \item A~následně je možné načíst výchozí konfiguraci pro prezentační vrstvu:
 
         \begin{itemize}
             \itemsep1pt\parskip0pt\parsep0pt
@@ -426,14 +433,14 @@ group by m.temperature_avg, m.temperature_stddev;
 
     \subsection{Správa dat}
 
-    Pro přidání dat do NoSQL databáze je nutno v kořenu projektu vytvořit adresář \texttt{pocasi} a umístit do něj
+    Pro přidání dat do NoSQL databáze je nutno v~kořenu projektu vytvořit adresář \texttt{pocasi} a umístit do něj
     datovou sadu souborů určenou pro načtení -- to lze realizovat pomocí \texttt{\textdollar\ make scrape}.
 
     Následné spuštění výpočetní vrstvy je možné pomocí příkazu \texttt{\textdollar\ make compute}.
 
     \subsection{Správa uživatelů}
 
-    Vytvoření uživatelů a administrátorů lze docílit dvěma způsoby -- buď v grafickém rozhraní Apache Superset nebo
+    Vytvoření uživatelů a administrátorů lze docílit dvěma způsoby -- buď v~grafickém rozhraní Apache Superset nebo
     přes příkazovou řádku -- druhé pomocí \texttt{\textdollar\ make create-admin}, resp. \texttt{\textdollar\ make create-user}.
 
     \subsection{Porty služeb}
