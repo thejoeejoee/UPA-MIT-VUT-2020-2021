@@ -266,6 +266,18 @@ urlcolor={codeprimary}
     Pro zachování jednoduchosti byla v tomto případě vzata v potaz pouze koncová hodnota předcházející vynulování
     kumulované hodnoty pro následující den -- tedy poslední hodnota před ranními 09:00.
     
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=.9\textwidth]{Temperature.png}
+        \caption{Výsledná vizualizace teploty}
+    \end{figure}
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=.9\textwidth]{Rainfall.png}
+        \caption{Výsledná vizualizace srážek}
+    \end{figure}
+    
     \subsubsection{Dotaz B}
     \emph{Najděte skupiny meteorologických stanic s~podobným počasím.}
 
@@ -321,6 +333,16 @@ group by m.temperature_avg, m.temperature_stddev;
 
     \emph{Vizualizujte průměrnou teplotu vzduchu na kontinentu Austrálie i případnou interpolací hodnot do regionů
     bez měřících stanic.}
+    Z dotazu C se podařilo vizualizovat jenom průměrnou teplotu se podařila. Interpolace by se dala implementovat například následovně: 
+    
+    \begin{enumerate}
+        \item vytvořit matici $latitude \times longitude$ pro celou Austrálii s jemností dle požadavků
+        \item pro pole se stanicí udělat agregaci a uložit si pro pole \texttt{avg} a \texttt{stdev}
+        \item pro chybějící pole se podívat na okolní, zprůměrovat \texttt{mean} a \texttt{stdev} a vždy začínat podle počtu okolních, čím více vyplněných, tím dřive interpolovat
+        \item interpolovat hodnoty vygenerovaním z \texttt{avg\_mean} a \texttt{avg\_stdev}, tedy z normálního rozdělení
+        \item rekurzivně opakovat dokud nejsou všechna pole naplněna hodnotami
+        \item výstupem jsou \texttt{mean} z každého pole
+    \end{enumerate}
 
     \subsection{superset}
 
