@@ -27,6 +27,7 @@
 \colorlet{keywordstyle}{codeprimary!70!red}
 \colorlet{stringstyle}{codeprimary!25!red}
 \colorlet{commentstyle}{purple!90!white}
+\usepackage[htt]{hyphenat}
 
 \lstset{
 captionpos=b,
@@ -34,6 +35,17 @@ belowskip=0pt,
 }
 
 \lstdefinelanguage{XML}{
+morestring=[b]",
+morestring=[s]{>}{<},
+morecomment=[s]{<?}{?>},
+basicstyle=\color{codeprimary}\ttfamily,
+keywordstyle=\color{keywordstyle}\bfseries,
+commentstyle=\color{commentstyle}\ttfamily,
+stringstyle=\color{stringstyle},
+columns=fullflexible,
+showstringspaces=false,
+}
+\lstdefinelanguage{SQL}{
 morestring=[b]",
 morestring=[s]{>}{<},
 morecomment=[s]{<?}{?>},
@@ -257,7 +269,15 @@ urlcolor={codeprimary}
     sady obsahující agregovaná data tak, že pro každou stanici a týden v roce je uložena standardní odchylka a
     střední hodnota teplot vzduchu v tom konkrétním týdnu. Takto připravená data jsou následně agregovaná dle obou
     statistických ukazatelů do množin dvojic $(\text{stanice}, \text{týden v roce})$, které již odpovídají
-    \emph{stanicím s podobným počasím}.
+    \emph{stanicím s podobným počasím} -- aby došlo úspěšně ke generalizaci, jsou oba statistické ukazatele
+    zaokrouhleny na celá čísla.
+
+    Problém \emph{podobného počasí} lze přímo v modelové vrstvě řešit i mnohem sofistikovanějšími
+    metodami, například pomocí n-dimenzionálního rozmístění stanic dle změřených příznaků a následného hledání 
+    skupin stanic klasifikátorem \texttt{k-means} či jiného klasifikátoru určeného ke \emph{clusterizaci}. Takto
+    fungující klasifikátor by mohl, dle znalostí autorů tohoto projektu, být založen na vlastní \texttt{window}
+    funkci založené na technice CTE v rekurzivní variantě.
+
 \begin{figure}[H]
     \begin{lstlisting}[language=SQL]
 with measurements as (
@@ -268,24 +288,23 @@ with measurements as (
         ROUND(cast(avg(temperature) as numeric), 0)    as temperature_avg
     from temperature t
         inner join station s on s.wmo_id = t.station_id
-    where extract(year from t.timestamp) = 2020
+    where
+        extract(year from t.timestamp) = 2020
     group by extract(weeks from t.timestamp), s.wmo_id
 )
 select
     m.temperature_avg,
     m.temperature_stddev,
-    array_agg(cast(ARRAY [m.wmo_id, m.week_number] as int[2]))
-        as stations_in_time
+    array_agg(cast(ARRAY [m.wmo_id, m.week_number] as int[2])) as stations_in_time
 from measurements m
-where temperature_stddev is not null and temperature_avg is not null
+where
+    temperature_stddev is not null and temperature_avg is not null
 group by m.temperature_avg, m.temperature_stddev;
     \end{lstlisting}
     \caption{SQL dotaz pro nalezení \emph{stanic s podobným počasím} v konkrétních týdnech -- analogicky by vznikaly
     skupiny stanic na základě dalších parametrů \emph{počasí}.}
     \label{lst:sql-dotaz-b}
 \end{figure}
-
-
 
     \subsection{superset}
 
