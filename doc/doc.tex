@@ -320,8 +320,8 @@ group by m.temperature_avg, m.temperature_stddev;
 
     \begin{itemize}
         \itemsep1pt\parskip0pt\parsep0pt
-        \item Docker engine
-        \item Docker compose
+        \item Docker engine 19.0 a vyšší
+        \item Docker compose 1.25 a vyšší
     \end{itemize}
 
     \subsection{Inicializace služeb}\label{initialization-of-services}
@@ -329,62 +329,57 @@ group by m.temperature_avg, m.temperature_stddev;
     \begin{enumerate}
         \def\labelenumi{\arabic{enumi}.}
         \itemsep1pt\parskip0pt\parsep0pt
-        \item Inicializujte a spusťte docker kontejnery:
+        \item Zapnutí potřebných kontejnerů:
 
         \begin{itemize}
             \itemsep1pt\parskip0pt\parsep0pt
 
-            \item Spusťte kontejnery:
+            \item spuštění kontejnerů
 
             \begin{itemize}
                 \itemsep1pt\parskip0pt\parsep0pt
-                \item[] \texttt{make up}
+                \item[] \texttt{\textdollar\ make up}
             \end{itemize}
 
-            \item Spusťte kontejnery na pozadí:
+            \item spuštění kontejnerů na pozadí
 
             \begin{itemize}
                 \itemsep1pt\parskip0pt\parsep0pt
-                \item[] \texttt{make upd}
+                \item[] \texttt{\textdollar\ make upd}
             \end{itemize}
         \end{itemize}
 
-        \item Počkejte, až budou všechny kontejnery spuštěné a následně inicializujte \texttt{superset} a vytvořte uživatele administrátora:
+        \item Po spuštění příkazu je nutné vyčkat na nastartovanání služeb v kontejnerech a následně je možné
+        inicializovat projekt následujícím příkazem (při běžíčících kontejnerech):
 
         \begin{itemize}
             \itemsep1pt\parskip0pt\parsep0pt
-            \item[] \texttt{make init}
+            \item[] \texttt{\textdollar\ make init}
         \end{itemize}
 
-        \item Inicializujte databázi a dashboardy:
+        \item A následně je možné načíst výchozí konfiguraci pro prezentační vrstvu:
 
         \begin{itemize}
             \itemsep1pt\parskip0pt\parsep0pt
-            \item[] \texttt{make restore-superset}
+            \item[] \texttt{\textdollar\ make restore-superset}
         \end{itemize}
     \end{enumerate}
 
     \subsection{Zastavení služeb}
 
-    K zastavení všech služeb spusťte příkaz: \texttt{make down}
+    Pro zastavení služeb je možné použít příkaz \texttt{\textdollar\ make down}.
 
     \subsection{Správa dat}
 
-    Pro přidání dat do NoSQL databáze vytvořte adresář \texttt{pocasi} a zkopírujte do něj dataset. Následně spusťte příkaz: \texttt{make scrape}
+    Pro přidání dat do NoSQL databáze je nutno v kořenu projektu vytvořit adresář \texttt{pocasi} a umístit do něj
+    datovou sadu souborů určenou pro načtení -- to lze realizovat pomocí \texttt{\textdollar\ make scrape}.
 
-    Aktualizaci SQL databáze daty získanými z NoSQL databáze provedete příkazem: \texttt{make compute}
+    Následné spuštění výpočetní vrstvy je možné pomocí příkazu \texttt{\textdollar\ make compute}.
 
     \subsection{Správa uživatelů}
 
-    Vytvoření uživatelů a administrátorů lze docílit dvěma způsoby -- buď v grafickém rozhraní Superset (pokud již byl alespoň jeden administrátorský účet vytvořen) nebo přes příkazovou řádku.
-
-    Přidání administrátora přes příkaz:  \texttt{make create-admin}
-
-    Přidání uživatele přes příkaz: \texttt{make create-user}
-
-    \subsection{Nápověda}
-
-    Pro zobrazení nápovědy použijte příkaz: \texttt{make help}
+    Vytvoření uživatelů a administrátorů lze docílit dvěma způsoby -- buď v grafickém rozhraní Apache Superset nebo
+    přes příkazovou řádku -- druhé pomocí \texttt{\textdollar\ make create-admin}, resp. \texttt{\textdollar\ make create-user}.
 
     \subsection{Porty služeb}
     \begin{longtable}[c]{@{}ll@{}}
