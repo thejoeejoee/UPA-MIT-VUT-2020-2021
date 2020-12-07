@@ -254,9 +254,12 @@ urlcolor={codeprimary}
         hodnota měření
         \item \textbf{{\textdollar}sort} -- dokumenty jsou seřazeny dle stanice a času pořízení (pro snazší ladění)
         \item \textbf{{\textdollar}group} -- koncové seskupení do dávek měření, které odpovídající kompozitnímu klíči
-        \texttt{[station\_id, timestamp\_month]} a obsahují všechny měření z konkrétní stanice a měsíce -- v
+        \texttt{[station\_id, timestamp]} a obsahují všechny měření z konkrétní stanice a času -- v
         samotných záznamech se poté již vyskytuje pouze změřená hodnota (resp. hodnoty) a konkrétní časový otisk
     \end{itemize}
+    
+    V případě nejdeštivějších/nejsušších míst byl problém s tím jak hledět na data, protože srážky jsou spojitá veličina a data obsahují počet srážek v čase od 9:00 do 9:00 následujícího dne v časovým pásmu stanice. Pro jednoduchost je čas měření počtu srážek brán jak koncový čas tohoto měření. 
+    
     \subsubsection{Dotaz B}
     \emph{Najděte skupiny meteorologických stanic s~podobným počasím.}
 
