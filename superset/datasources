@@ -9,6 +9,29 @@ databases:
     - column_name: timestamp
       is_dttm: true
       type: DATETIME
+    - column_name: rainfall
+      type: FLOAT
+    - column_name: latitude
+      type: FLOAT
+    - column_name: longitude
+      type: FLOAT
+    - column_name: station_name
+      type: STRING
+    - column_name: id
+      type: INT
+    metrics:
+    - expression: count(*)
+      metric_name: count
+    params: '{"remote_id": 1, "database_name": "Weather", "import_time": 1607352841}'
+    schema: public
+    sql: "SELECT id,\n       rainfall,\n      timestamp,\n       station_name,\n \
+      \      latitude,\n       longitude\nFROM public.rainfall\n INNER JOIN public.station\
+      \ ON public.station.wmo_id=public.rainfall.station_id"
+    table_name: rainfall_station
+  - columns:
+    - column_name: timestamp
+      is_dttm: true
+      type: DATETIME
     - column_name: latitude
       type: FLOAT
     - column_name: temperature
@@ -22,7 +45,7 @@ databases:
     metrics:
     - expression: count(*)
       metric_name: count
-    params: '{"remote_id": 5, "database_name": "Weather", "import_time": 1607278181}'
+    params: '{"remote_id": 2, "database_name": "Weather", "import_time": 1607352841}'
     schema: public
     sql: "SELECT id,\n       temperature,\n       timestamp,\n       station_name,\n\
       \       latitude,\n       longitude\nFROM public.temperature\nINNER JOIN public.station\
@@ -58,9 +81,7 @@ databases:
     - column_name: timestamp
       is_dttm: true
       type: TIMESTAMP WITH TIME ZONE
-    - column_name: rainfall_last_day
-      type: DOUBLE PRECISION
-    - column_name: rainfall_from_morning
+    - column_name: rainfall
       type: DOUBLE PRECISION
     - column_name: station_id
       type: INTEGER

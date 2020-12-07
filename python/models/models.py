@@ -55,8 +55,7 @@ class Temperature(BaseTimedStationDataModel):
 
 
 class Rainfall(BaseTimedStationDataModel):
-    rainfall_from_morning = models.FloatField()
-    rainfall_last_day = models.FloatField()
+    rainfall = models.FloatField()
 
     class Meta(BaseTimedStationDataModel.Meta):
         db_table = 'rainfall'
@@ -64,6 +63,4 @@ class Rainfall(BaseTimedStationDataModel):
         verbose_name_plural = 'Rainfalls'
 
     def __str__(self):
-        return f'{self.station}: ({self.timestamp}, {self.rainfall_from_morning}, {self.rainfall_last_day})'
-
-# TODO: models for each computer result
+        return f'{self.station}: ({self.timestamp}, {self.rainfall})'

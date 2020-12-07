@@ -32,7 +32,6 @@ class Computer(object):
             {
                 "$project": {
                     "station": "$station._id",
-                    # "timestamp": {"$dateToString": {"format": "%Y-%m-%dT%H:%M:%S%z", "timezone": "$station.location", "date": "$time_period"}},
                     "timestamp": {"$dateToString": {"format": "%Y-%m-%dT%H:%M:%S%z", "date": "$time_period"}},
                     "month": {"$dateToString": {"format": "%Y-%m", "date": "$time_period"}},
                     "air_temperature": "$air_temperature",
@@ -82,7 +81,6 @@ class Computer(object):
             {
                 "$match": {
                     "rainfall_24hr": {"$ne": None},
-                    "rainfall": {"$ne": None},
                 },
             },
             {
@@ -100,27 +98,17 @@ class Computer(object):
             {
                 "$project": {
                     "station": "$station._id",
-                    # "timestamp": {"$dateToString": {"format": "%Y-%m-%dT%H:%M:%S%z", "timezone": "$station.location", "date": "$rainfall.end_time"}},
-                    "timestamp": {"$dateToString": {"format": "%Y-%m-%dT%H:%M:%S%z", "date": "$rainfall.end_time"}},
-                    "month": {"$dateToString": {"format": "%Y-%m", "date": "$time_period"}},
-                    "rainfall_from_9": "$rainfall.value",
-                    "rainfall_24hr_to_9": "$rainfall_24hr.value",
+                    "timestamp": {"$dateToString": {"format": "%Y-%m-%dT%H:%M:%S%z", "date": "$rainfall_24hr.end_time"}},
+                    "rainfall": "$rainfall_24hr.value",
                 },
             },
             {
-                "$sort": {"_id": 1, "timestamp": 1},
+                "$sort": {"station": 1, "timestamp": 1},
             },
             {
                 "$group": {
-                    "_id": ["$station", "$month"],
-                    "measurements": {
-                        "$push": {
-                            "timestamp": "$timestamp",
-                            "rainfall_from_9": "$rainfall_from_9",
-                            "rainfall_24hr_to_9": "$rainfall_24hr_to_9",
-                        },
-                    },
-                    "count": {"$sum": 1}
+                    "_id": ["$station", "$timestamp"],
+                    "rainfall": {"$first": "$rainfall"}
 
                 },
             },
@@ -132,21 +120,13 @@ class Computer(object):
         logger.info('Pipeline for rainfall data started.')
         data = MeasurementDocument.objects().aggregate(rainfall_pipeline)
         for batch in data:
-            (station, *_), batch_size, measurements = batch.get('_id'), batch.get('count'), batch.get('measurements')
+            (station, timestamp), rainfall_measurement = batch.get('_id'), batch.get('rainfall')
 
-            with Rainfall.bulk_objects.bulk_update_or_create_context(
-                    update_fields=('rainfall_from_morning', 'rainfall_last_day'),
-                    match_field=('station_id', 'timestamp'),
-                    batch_size=batch_size
-            ) as bulk:
-                for measurement in measurements:
-                    bulk.queue(Rainfall(
-                        station_id=station,
-                        timestamp=dateparse.parse_datetime(measurement['timestamp']),
-                        rainfall_from_morning=measurement['rainfall_from_9'],
-                        rainfall_last_day=measurement['rainfall_24hr_to_9'],
-                    ))
-            logger.info('Computed and imported %s records.', batch_size)
+            Rainfall.objects.update_or_create(
+                station_id=station,
+                timestamp=dateparse.parse_datetime(timestamp),
+                rainfall=rainfall_measurement,
+            )
 
 
 __all__ = ['Computer']
