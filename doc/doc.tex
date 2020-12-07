@@ -223,17 +223,28 @@ urlcolor={codeprimary}
 
     Podrobnější popis dotazů a jejich řešení pomocí agregací následuje:
 
-    \paragraph{Dotaz A:}
+    \subsubsection{Dotaz A}
 
-    \todo{možná popsat pipeliny těch dotazů - lookup -> project -> group atd..}
+    Získání dat v odpovídající struktuře a splňující podmínky prvního dotazu vychází z použití agregační \emph{pipeline}
+    odeslané na kolekci \texttt{measurement} do databáze MongoDB. Každá část dotazu je realizována samostatnou
+    agregací, avšak obě sdílí následující strukturu:
+    \begin{itemize}
+        \item \textbf{{\textdollar}match} -- do dalšího zpracování se vezmou pouze dokumenty, která jsou validní pro
+        danou část dotazu (tedy obsahují teplotu vzduchu, resp. úhrny srážek)
+        \item \textbf{{\textdollar}lookup} -- k datům měření se připojí data o stanici na základě klíče \texttt{station\_id}
+        \item \textbf{{\textdollar}unwind} -- tento krok zajistí rozexpandování nalezených stanic k každému měření --
+        vzhledem k povaze dat však ke každému měření odpovídá právě jedna stanice
+        \item \textbf{{\textdollar}project} -- do dalšího zpracování jsou vzaty v potaz pouze některé
+        atributy -- zejména samotná data identifikující měření (stanice, měsíc měření, čas měření) a také samotná
+        hodnota měření
+        \item \textbf{{\textdollar}sort} -- dokumenty jsou seřazeny dle stanice a času pořízení (pro snazší ladění)
+        \item \textbf{{\textdollar}group} -- koncové seskupení do dávek měření, které odpovídající kompozitnímu klíči
+        \texttt{[station\_id, timestamp\_month]} a obsahují všechny měření z konkrétní stanice a měsíce -- v
+        samotných záznamech se poté již vyskytuje pouze změřená hodnota (resp. hodnoty) a konkrétní časový otisk
+    \end{itemize}
+    \paragraph{Dotaz B}
 
-    \paragraph{Dotaz B:}
-
-    \subsection{redis}
-
-    Kontejner redis vytvoří instanci Redis.
-
-    \subsection{superset}
+    \subsubsection{superset}
 
     Tento kontejner slouží pro instanci nástroje Apache Superset, který je určen pro publikaci a vizualizaci
     zpracovaných dat uložených v databázi v kontejneru \texttt{postgres}. Jako pomocný kontejner pro cache slouží

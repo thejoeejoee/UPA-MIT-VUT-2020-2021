@@ -2,6 +2,7 @@ from django.utils import dateparse
 
 from models import MeasurementDocument
 from models.models import Temperature, Rainfall
+from . import logger
 from .syncer import Syncer
 
 
@@ -10,53 +11,11 @@ class Computer(object):
     def run(self):
         Syncer.sync_stations()
 
-        average_day_temperature_pipeline = [
+        temperature_pipeline = [
             {
                 "$match": {
                     "air_temperature": {"$ne": None},
                 },
-
-            },
-            {
-                "$lookup":
-                    {
-                        "from": 'station',
-                        "localField": 'station',
-                        "foreignField": '_id',
-                        "as": 'station',
-                    },
-            },
-            {
-                "$unwind": {"path": '$station'},
-            },
-            {
-                "$project": {
-                    "day": {"$dateToString": {"format": "%Y-%m-%d", "date": "$time_period"}},
-                    "station_id": "$station._id",
-                    "air_temperature": "$air_temperature",
-                },
-            },
-            {
-                "$group": {
-                    "_id": {
-                        "day": "$day",
-                        "station_id": "$station_id",
-                    },
-
-                    "avg_air_temperature": {"$avg": "$air_temperature"},
-                },
-            },
-            {
-                "$sort": {"_id.day": 1, "_id.station_id": 1},
-            },
-        ]
-
-        tempereture_pipeline = [
-            {
-                "$match": {
-                    "air_temperature": {"$ne": None},
-                },
-
             },
             {
                 "$lookup":
@@ -100,7 +59,8 @@ class Computer(object):
             },
         ]
 
-        data = MeasurementDocument.objects().aggregate(tempereture_pipeline)
+        logger.info('Pipeline for temperature data started.')
+        data = MeasurementDocument.objects().aggregate(temperature_pipeline)
         for batch in data:
             (station, *_), batch_size, measurements = batch.get('_id'), batch.get('count'), batch.get('measurements')
 
@@ -115,6 +75,8 @@ class Computer(object):
                         timestamp=dateparse.parse_datetime(measurement['timestamp']),
                         temperature=measurement['air_temperature'],
                     ))
+
+            logger.info('Computed and imported %s records.', batch_size)
 
         rainfall_pipeline = [
             {
@@ -167,6 +129,7 @@ class Computer(object):
             },
         ]
 
+        logger.info('Pipeline for rainfall data started.')
         data = MeasurementDocument.objects().aggregate(rainfall_pipeline)
         for batch in data:
             (station, *_), batch_size, measurements = batch.get('_id'), batch.get('count'), batch.get('measurements')
@@ -183,6 +146,7 @@ class Computer(object):
                         rainfall_from_morning=measurement['rainfall_from_9'],
                         rainfall_last_day=measurement['rainfall_24hr_to_9'],
                     ))
+            logger.info('Computed and imported %s records.', batch_size)
 
 
 __all__ = ['Computer']
