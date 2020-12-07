@@ -224,6 +224,7 @@ urlcolor={codeprimary}
     Podrobnější popis dotazů a jejich řešení pomocí agregací následuje:
 
     \subsubsection{Dotaz A}
+    \emph{Vytvořte žebříček nejdeštivějších/nejsušších a nejteplejších/nejchladnějších meteorologických stanic/lokalit.}
 
     Získání dat v odpovídající struktuře a splňující podmínky prvního dotazu vychází z použití agregační \emph{pipeline}
     odeslané na kolekci \texttt{measurement} do databáze MongoDB. Každá část dotazu je realizována samostatnou
@@ -242,13 +243,55 @@ urlcolor={codeprimary}
         \texttt{[station\_id, timestamp\_month]} a obsahují všechny měření z konkrétní stanice a měsíce -- v
         samotných záznamech se poté již vyskytuje pouze změřená hodnota (resp. hodnoty) a konkrétní časový otisk
     \end{itemize}
-    \paragraph{Dotaz B}
+    \subsubsection{Dotaz B}
+    \emph{Najděte skupiny meteorologických stanic s~podobným počasím.}
 
-    \subsubsection{superset}
+    Před samotným řešením problému je vhodné lokálně definovat \emph{stanice s podobným počasím} -- pro účely tohoto
+    dotazu mají dvě stanice podobné počasí, jestliže lze prokázat pozitivní korelaci mezi daty změřenými v těchto
+    stanicích v odpovídajícím čase a zároveň v rámci stanovené odchylky odpovídají statistické metriky těchto
+    měřených dat. Tedy pro příklad, pro konkrétní den odpovídá střední hodnota a směrodatná odchylka teplot vzduchu
+    pro dvě \emph{stanice s podobným počasím} a zároveň je srovnatelný týdenní vývoj tohoto změřeného parametru.
+
+    Možný SQL dotaz, který splňuje specifickou část požadavku je zobrazen v \ref{lst:sql-dotaz-b} a je založen na
+    technice CTE implementované v použité databázi PostgreSQL. Jeho funkce je založena na vytvoření pomocné datové
+    sady obsahující agregovaná data tak, že pro každou stanici a týden v roce je uložena standardní odchylka a
+    střední hodnota teplot vzduchu v tom konkrétním týdnu. Takto připravená data jsou následně agregovaná dle obou
+    statistických ukazatelů do množin dvojic $(\text{stanice}, \text{týden v roce})$, které již odpovídají
+    \emph{stanicím s podobným počasím}.
+\begin{figure}[H]
+    \begin{lstlisting}[language=SQL]
+with measurements as (
+    select
+        s.wmo_id,
+        extract(weeks from t.timestamp)                as week_number,
+        ROUND(cast(stddev(temperature) as numeric), 0) as temperature_stddev,
+        ROUND(cast(avg(temperature) as numeric), 0)    as temperature_avg
+    from temperature t
+        inner join station s on s.wmo_id = t.station_id
+    where extract(year from t.timestamp) = 2020
+    group by extract(weeks from t.timestamp), s.wmo_id
+)
+select
+    m.temperature_avg,
+    m.temperature_stddev,
+    array_agg(cast(ARRAY [m.wmo_id, m.week_number] as int[2]))
+        as stations_in_time
+from measurements m
+where temperature_stddev is not null and temperature_avg is not null
+group by m.temperature_avg, m.temperature_stddev;
+    \end{lstlisting}
+    \caption{SQL dotaz pro nalezení \emph{stanic s podobným počasím} v konkrétních týdnech -- analogicky by vznikaly
+    skupiny stanic na základě dalších parametrů \emph{počasí}.}
+    \label{lst:sql-dotaz-b}
+\end{figure}
+
+
+
+    \subsection{superset}
 
     Tento kontejner slouží pro instanci nástroje Apache Superset, který je určen pro publikaci a vizualizaci
     zpracovaných dat uložených v databázi v kontejneru \texttt{postgres}. Jako pomocný kontejner pro cache slouží
-    \texttt{redis} s instancí stejnojmenné databázi typu \texttt{key-value}.
+    \texttt{redis} s instancí stejnojmenné databáze typu \texttt{key-value}.
 
     \section{Spuštění a práce s projektem}
 
