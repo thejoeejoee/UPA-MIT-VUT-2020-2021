@@ -266,6 +266,20 @@ urlcolor={codeprimary}
     Pro zachování jednoduchosti byla v tomto případě vzata v potaz pouze koncová hodnota předcházející vynulování
     kumulované hodnoty pro následující den -- tedy poslední hodnota před ranními 09:00.
     
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=.9\textwidth]{Temperature.png}
+        \caption{Výsledná vizualizace teploty}
+        \label{fig:vizualizace-teploty}
+    \end{figure}
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=.9\textwidth]{Rainfall.png}
+        \caption{Výsledná vizualizace srážek}
+        \label{fig:vizualizace-srazek}
+    \end{figure}
+    
     \subsubsection{Dotaz B}
     \emph{Najděte skupiny meteorologických stanic s~podobným počasím.}
 
@@ -321,6 +335,33 @@ group by m.temperature_avg, m.temperature_stddev;
 
     \emph{Vizualizujte průměrnou teplotu vzduchu na kontinentu Austrálie i případnou interpolací hodnot do regionů
     bez měřících stanic.}
+
+    Vizualizace změřených hodnot pro jednotlivé stanice na dotčeném území již byla realizována jako součást odpovědi
+    na dotaz A, viz snímky prezentační vrstvy \ref{fig:vizualizace-teploty} a \ref{fig:vizualizace-srazek}. Zbytek
+    této sekce se bude věnovat návrhu algoritmu pro interpolaci změřených hodnot i pro území, na kterých se měřící
+    stanice nenachází a tím pádem nejsou z těchto lokalit data.
+
+    Následuje konceptuální návrh algoritmu pro interpolaci počasí pro celé území.
+    
+    \begin{enumerate}
+        \item vytvoření hodnotové matice matice nad zemepisnou šířkou a délkou -- tedy $latitude \times longitude$ pro
+        rozsah území našeho zájmu s hustotou polí dle vstupního parametru (parametru, co určuje úhel/délku
+        polí)
+        \item pro pole matice, ve kterých se nachází nenulové množství měřících stanic, provést agregaci těchto stanic
+        na základě interpolovaného parametru do střední hodnoty a směrodatné odchylky
+        \item pole s nulovým počtem stanic seřadit dle množství sousedních polí s hodnotami sestupně, stanovit první
+        jako interpolované pole a aplikovat interpolaci:
+        \begin{enumerate}
+            \item z průměru středních hodnot a směrodaných odchylek okolních neprázdných polí simulovat normální
+            rozdělení pro interpolované pole
+            \item použít toto rozdělení pro vygenerování hodnoty, která je stanovena jako střední hodnota
+            interpolovaného pole
+            \item směrodatnou odchylku tohoto rozdělení stanovit jako směrodanou odchylku interpolovaného pole
+        \end{enumerate}
+        \item iterativně doplňovat hodnoty do matice v rámci bodu 3.
+        \item ukončit iteraci, jestliže jsou všechna pole vyplněna
+        \item výstupem algoritmu jsou následně střední hodnoty z každého pole z původního rozdělení
+    \end{enumerate}
 
     \subsection{superset}
 
