@@ -258,7 +258,13 @@ urlcolor={codeprimary}
         samotných záznamech se poté již vyskytuje pouze změřená hodnota (resp. hodnoty) a konkrétní časový otisk
     \end{itemize}
     
-    V případě nejdeštivějších/nejsušších míst byl problém s tím jak hledět na data, protože srážky jsou spojitá veličina a data obsahují počet srážek v čase od 9:00 do 9:00 následujícího dne v časovým pásmu stanice. Pro jednoduchost je čas měření počtu srážek brán jak koncový čas tohoto měření. 
+    V případě nejdeštivějších/nejsušších míst byl problém s tím jak hledět na data, protože srážky jsou spojitá veličina a data obsahují počet srážek v čase od 9:00 do 9:00 následujícího dne v časovým pásmu stanice. Pro jednoduchost je čas měření počtu srážek brán jak koncový čas tohoto měření.
+
+    V případě odpovědi na otázku nejdeštivějších/nejsušších stanic se naskytl problém časové lokality údajů -- úhrn
+    srážek je z pohledu datové sady spojitá veličina, ovšem uložen je diskrétně jako kumulativní množství úhrnu
+    srážek od ranních 09:00 do 09:00 dalšího dne ve specifických časových intervalech.
+    Pro zachování jednoduchosti byla v tomto případě vzata v potaz pouze koncová hodnota předcházející vynulování
+    kumulované hodnoty pro následující den -- tedy poslední hodnota před ranními 09:00.
     
     \subsubsection{Dotaz B}
     \emph{Najděte skupiny meteorologických stanic s~podobným počasím.}
@@ -310,6 +316,11 @@ group by m.temperature_avg, m.temperature_stddev;
     skupiny stanic na základě dalších parametrů \emph{počasí}.}
     \label{lst:sql-dotaz-b}
 \end{figure}
+
+    \subsubsection{Dotaz C}
+
+    \emph{Vizualizujte průměrnou teplotu vzduchu na kontinentu Austrálie i případnou interpolací hodnot do regionů
+    bez měřících stanic.}
 
     \subsection{superset}
 
