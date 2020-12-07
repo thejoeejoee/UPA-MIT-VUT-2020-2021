@@ -1,0 +1,139 @@
+version: "3.3"
+
+services:
+  # production containers
+  scraper:
+    build:
+      context: ./python
+      dockerfile: scraper.Dockerfile
+    container_name: scraper
+    depends_on:
+      - mongo
+    command: local-dir
+    env_file:
+      - ./.local.env
+    volumes:
+      - ./python/scraper/:/usr/src/app
+      - ./python/models/:/usr/src/app/models
+
+      - ./pocasi/:/data/scraped/
+    environment:
+      DJANGO_SETTINGS_MODULE: models.settings
+
+  mongo:
+    image: mongo:4.4.1
+    container_name: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: admin
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongo/init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - mongo-data:/data/db
+
+  computer:
+    build:
+      context: ./python
+      dockerfile: computer.Dockerfile
+    container_name: computer
+    depends_on:
+      - mongo
+      - postgres
+    env_file:
+      - ./.local.env
+    volumes:
+      - ./python/computer/:/usr/src/app
+      - ./python/models/:/usr/src/app/models
+    environment:
+      DJANGO_SETTINGS_MODULE: models.settings
+
+  redis:
+    container_name: redis
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+
+  postgres:
+    image: postgres:12.4
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: upa
+      POSTGRES_PASSWORD: upa
+      POSTGRES_DB: upa
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - postgres-data:/var/lib/postgresql/data
+
+  superset:
+    build: ./superset
+    container_name: superset
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./.local.env
+    ports:
+      - 8088:8088
+    volumes:
+      - ./superset/config.py:/etc/superset/superset_config.py:ro
+      
+      - ./superset/datasources:/etc/superset/datasources
+      - ./superset/dashboards:/etc/superset/dashboards
+
+  # admin containers
+  mongo-admin:
+    image: mongo-express:0.54.0
+    container_name: mongo-admin
+    restart: always
+    depends_on:
+      - mongo
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
+
+  postgres-admin:
+    container_name: postgres-admin
+    image: adminer:latest
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: nette
+    ports:
+      - 8082:8080
+
+  # managing Django models in postgres
+  # run as $ docker-compose run django-admin <django-command>
+  django-admin:
+    build:
+      context: ./python
+      dockerfile: models.Dockerfile
+    container_name: models
+    command: check
+    depends_on:
+      - postgres
+    env_file:
+      - ./.local.env
+    volumes:
+      - ./python/models/:/usr/src/app/models
+    environment:
+      DJANGO_SETTINGS_MODULE: models.settings
+
+volumes:
+  mongo-data:
+  postgres-data:
+  scraper-data:
+  redis-data:

@@ -1,0 +1,116 @@
+databases:
+- database_name: Weather
+  extra: "{\r\n    \"metadata_params\": {},\r\n    \"engine_params\": {},\r\n    \"\
+    metadata_cache_timeout\": {},\r\n    \"schemas_allowed_for_csv_upload\": []\r\n\
+    }"
+  sqlalchemy_uri: postgresql://superset:XXXXXXXXXX@postgres/upa
+  tables:
+  - columns:
+    - column_name: timestamp
+      is_dttm: true
+      type: DATETIME
+    - column_name: rainfall
+      type: FLOAT
+    - column_name: latitude
+      type: FLOAT
+    - column_name: longitude
+      type: FLOAT
+    - column_name: station_name
+      type: STRING
+    - column_name: id
+      type: INT
+    metrics:
+    - expression: count(*)
+      metric_name: count
+    params: '{"remote_id": 1, "database_name": "Weather", "import_time": 1607352841}'
+    schema: public
+    sql: "SELECT id,\n       rainfall,\n      timestamp,\n       station_name,\n \
+      \      latitude,\n       longitude\nFROM public.rainfall\n INNER JOIN public.station\
+      \ ON public.station.wmo_id=public.rainfall.station_id"
+    table_name: rainfall_station
+  - columns:
+    - column_name: timestamp
+      is_dttm: true
+      type: DATETIME
+    - column_name: latitude
+      type: FLOAT
+    - column_name: temperature
+      type: FLOAT
+    - column_name: longitude
+      type: FLOAT
+    - column_name: station_name
+      type: STRING
+    - column_name: id
+      type: INT
+    metrics:
+    - expression: count(*)
+      metric_name: count
+    params: '{"remote_id": 2, "database_name": "Weather", "import_time": 1607352841}'
+    schema: public
+    sql: "SELECT id,\n       temperature,\n       timestamp,\n       station_name,\n\
+      \       latitude,\n       longitude\nFROM public.temperature\nINNER JOIN public.station\
+      \ ON public.station.wmo_id=public.temperature.station_id"
+    table_name: temperature_station
+  - columns:
+    - column_name: created
+      is_dttm: true
+      type: TIMESTAMP WITH TIME ZONE
+    - column_name: station_height
+      type: DOUBLE PRECISION
+    - column_name: latitude
+      type: DOUBLE PRECISION
+    - column_name: longitude
+      type: DOUBLE PRECISION
+    - column_name: station_name
+      type: VARCHAR(128)
+    - column_name: location
+      type: VARCHAR(128)
+    - column_name: wmo_id
+      type: INTEGER
+    main_dttm_col: created
+    metrics:
+    - expression: COUNT(*)
+      metric_name: count
+      metric_type: count
+      verbose_name: COUNT(*)
+    table_name: station
+  - columns:
+    - column_name: created
+      is_dttm: true
+      type: TIMESTAMP WITH TIME ZONE
+    - column_name: timestamp
+      is_dttm: true
+      type: TIMESTAMP WITH TIME ZONE
+    - column_name: rainfall
+      type: DOUBLE PRECISION
+    - column_name: station_id
+      type: INTEGER
+    - column_name: id
+      type: INTEGER
+    main_dttm_col: created
+    metrics:
+    - expression: COUNT(*)
+      metric_name: count
+      metric_type: count
+      verbose_name: COUNT(*)
+    table_name: rainfall
+  - columns:
+    - column_name: created
+      is_dttm: true
+      type: TIMESTAMP WITH TIME ZONE
+    - column_name: timestamp
+      is_dttm: true
+      type: TIMESTAMP WITH TIME ZONE
+    - column_name: temperature
+      type: DOUBLE PRECISION
+    - column_name: station_id
+      type: INTEGER
+    - column_name: id
+      type: INTEGER
+    main_dttm_col: created
+    metrics:
+    - expression: COUNT(*)
+      metric_name: count
+      metric_type: count
+      verbose_name: COUNT(*)
+    table_name: temperature
