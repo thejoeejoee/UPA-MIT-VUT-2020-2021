@@ -7,9 +7,9 @@
 ## Filling Environment Variables
 Create file ```.local.env``` and fill it according to ```.local.env.template```.
 
-```SUPSERSET_SECRET```, ```SECRET_KEY``` - has to be random and static for each instance of project.
+```SUPSERSET_SECRET```, ```SECRET_KEY``` - has to be random and static for each instance of project
 
-```MAPBOX_API_KEY``` - API access token for [Mapbox](https://www.mapbox.com). Needed for viewing maps in Superset.
+```MAPBOX_API_KEY``` - API access token for [Mapbox](https://www.mapbox.com) needed for viewing maps in Superset
 
 ```LOG_LEVEL``` - logging level corresponding to python logging levels
 
