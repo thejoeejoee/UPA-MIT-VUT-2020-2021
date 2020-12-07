@@ -109,7 +109,6 @@ class Computer(object):
                 "$group": {
                     "_id": ["$station", "$timestamp"],
                     "rainfall": {"$first": "$rainfall"}
-
                 },
             },
             {
@@ -127,6 +126,8 @@ class Computer(object):
                 timestamp=dateparse.parse_datetime(timestamp),
                 rainfall=rainfall_measurement,
             )
+
+            logger.info('Computed and imported %s records.', 1)
 
 
 __all__ = ['Computer']
