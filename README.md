@@ -1,4 +1,6 @@
-# UPA MIT-VUT@2020-2021
+# UPA FIT-VUT@2020-2021
+
+Dockerized application for fetching, parsing, processing, annotating and displaying meteorological from Australia.
 
 ## Requirements
 * Docker engine
